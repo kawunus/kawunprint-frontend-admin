@@ -1,0 +1,56 @@
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+export const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Интерцептор для добавления токена
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    console.log('🔐 Current token:', token);
+    console.log('🚀 Making request to:', config.method?.toUpperCase(), config.url);
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ Token added to headers');
+    } else {
+      console.log('❌ No token found in localStorage');
+    }
+    
+    console.log('📋 Request headers:', config.headers);
+    return config;
+  },
+  (error) => {
+    console.error('❌ Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Интерцептор для обработки ошибок
+api.interceptors.response.use(
+  (response) => {
+    console.log('✅ Response received:', response.status, response.config.url);
+    return response;
+  },
+  (error) => {
+    console.error('❌ Response error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      message: error.response?.data?.message,
+      data: error.response?.data
+    });
+    
+    if (error.response?.status === 401) {
+      console.log('🛑 401 Unauthorized - removing token');
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
