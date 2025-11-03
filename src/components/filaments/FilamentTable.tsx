@@ -13,7 +13,6 @@ interface Props {
 export const FilamentTable: React.FC<Props> = ({ filaments, loading, onEdit, onDelete }) => {
   const { t } = useTranslation();
   const columns = [
-  // ID column hidden by request
     { key: 'color', title: t('filaments.color') },
     { key: 'type', title: t('filaments.type'), render: (t: any) => t?.name || '-' },
     { key: 'pricePerGram', title: t('filaments.pricePerGram'), render: (v: number) => `${v.toFixed(2)} BYN/g` },

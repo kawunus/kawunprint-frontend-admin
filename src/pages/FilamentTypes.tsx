@@ -84,8 +84,8 @@ const FilamentTypes: React.FC = () => {
           <div className="bg-white p-6 rounded shadow-lg z-50 w-full max-w-xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">{t('common.edit') || 'Edit Filament Type'}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label={t('filaments.typeName')} value={editName} onChange={e => setEditName(e.target.value)} maxLength={10} />
-              <Input label={t('filaments.description')} value={editDescription} onChange={e => setEditDescription(e.target.value)} maxLength={300} />
+              <Input label={t('filaments.typeName')} value={editName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditName(e.target.value)} maxLength={10} />
+              <Input label={t('filaments.description')} value={editDescription} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditDescription(e.target.value)} maxLength={300} multiline rows={4} />
             </div>
             {editError && (
               <div className="mt-3 text-sm text-red-600">{editError}</div>
@@ -160,14 +160,16 @@ const FilamentTypes: React.FC = () => {
               <Input
                 label={t('filaments.typeName')}
                 value={typeName}
-                onChange={e => setTypeName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTypeName(e.target.value)}
                 maxLength={10}
               />
               <Input
                 label={t('filaments.description')}
                 value={typeDescription}
-                onChange={e => setTypeDescription(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTypeDescription(e.target.value)}
                 maxLength={300}
+                multiline
+                rows={4}
               />
             </div>
             {typeError && (
