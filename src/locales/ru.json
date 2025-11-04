@@ -1,4 +1,5 @@
 {
+  "home.title": "Главная",
   "filaments.title": "Филаменты",
   "filaments.newFilament": "Добавить",
   "filaments.newType": "Новый тип",
@@ -107,4 +108,35 @@
   "errors.printers.nameRequired": "Название обязательно",
   "errors.printers.nameTooLong": "Название не более 50 символов",
   "errors.printers.descTooLong": "Описание не более 200 символов"
+  ,
+  "orders.title": "Заказы",
+  "users.title": "Пользователи",
+  "home.greeting.morning": "Доброе утро",
+  "home.greeting.afternoon": "Добрый день",
+  "home.greeting.evening": "Добрый вечер",
+  "home.greeting.night": "Доброй ночи",
+  "home.widgets.greeting": "Приветствие",
+  "home.widgets.overview": "Сводка",
+  "home.widgets.datetime": "Дата, время и местоположение",
+  "home.widgets.location": "Местоположение",
+  "home.widgets.facts": "Интересные факты",
+  "home.location.notSupported": "Геолокация не поддерживается",
+  "home.location.permissionDenied": "Доступ к геолокации запрещён",
+  "home.location.fetching": "Определяем местоположение…",
+  "home.location.coords": "Координаты",
+  "home.facts.totalFilament": "Всего филамента",
+  "home.facts.activePrinters": "Активные принтеры",
+  "home.facts.ordersInProgress": "Заказы в работе",
+  "home.facts.avgPricePerGram": "Средняя цена/г"
+  ,
+  "profile.title": "Профиль",
+  "profile.empty": "Эта страница в разработке."
+  ,
+  "common.profile": "Профиль"
+  ,
+  "home.gags.0": "Сделаем сегодня что‑нибудь классное.",
+  "home.gags.1": "Принтеры разогреты, кофе заряжен.",
+  "home.gags.2": "Мечты о филаменте и идеальных слоях.",
+  "home.gags.3": "По одному слою за раз.",
+  "home.gags.4": "Сохраняй спокойствие и печатай."
 }

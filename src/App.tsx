@@ -9,6 +9,7 @@ import Filaments from './pages/Filaments';
 import FilamentTypes from './pages/FilamentTypes';
 import Printers from './pages/Printers';
 import PrinterDetail from './pages/PrinterDetail';
+import Profile from './pages/Profile';
 import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -116,6 +117,15 @@ function App() {
               <ProtectedRoute>
                 <Header />
                 <PrinterDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Header />
+                <Profile />
               </ProtectedRoute>
             }
           />

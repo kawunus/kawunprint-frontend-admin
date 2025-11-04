@@ -1,4 +1,5 @@
 {
+  "home.title": "Main",
   "filaments.title": "Filaments",
   "filaments.newFilament": "New",
   "filaments.newType": "New type",
@@ -108,4 +109,35 @@
   "errors.printers.nameRequired": "Name is required",
   "errors.printers.nameTooLong": "Name must be at most 50 characters",
   "errors.printers.descTooLong": "Description must be at most 200 characters"
+  ,
+  "orders.title": "Orders",
+  "users.title": "Users",
+  "home.greeting.morning": "Good morning",
+  "home.greeting.afternoon": "Good afternoon",
+  "home.greeting.evening": "Good evening",
+  "home.greeting.night": "Good night",
+  "home.widgets.greeting": "Greeting",
+  "home.widgets.overview": "Overview",
+  "home.widgets.datetime": "Date, time & location",
+  "home.widgets.location": "Location",
+  "home.widgets.facts": "Interesting facts",
+  "home.location.notSupported": "Geolocation is not supported",
+  "home.location.permissionDenied": "Geolocation permission denied",
+  "home.location.fetching": "Fetching location…",
+  "home.location.coords": "Coordinates",
+  "home.facts.totalFilament": "Total filament",
+  "home.facts.activePrinters": "Active printers",
+  "home.facts.ordersInProgress": "Orders in progress",
+  "home.facts.avgPricePerGram": "Avg price/g"
+  ,
+  "profile.title": "Profile",
+  "profile.empty": "This page is under construction."
+  ,
+  "common.profile": "Profile"
+  ,
+  "home.gags.0": "Let's make something awesome today.",
+  "home.gags.1": "Printers warmed up, caffeine loaded.",
+  "home.gags.2": "Filament dreams and perfect layers.",
+  "home.gags.3": "One layer at a time.",
+  "home.gags.4": "Keep calm and print on."
 }

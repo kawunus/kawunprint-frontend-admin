@@ -72,7 +72,7 @@ export const OrderTable: React.FC<OrderTableProps> = ({
             onClick={() => navigate(`/orders/${row.id}`)}
             variant="primary"
             size="sm"
-            className="w-full"
+            className="w-full transform transition-transform duration-150 hover:scale-105"
           >
             View Details
           </Button>
