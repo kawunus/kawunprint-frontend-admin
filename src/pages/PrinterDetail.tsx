@@ -16,6 +16,7 @@ const PrinterDetail: React.FC = () => {
   const [edit, setEdit] = useState<Printer | null>(null);
   const [err, setErr] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -35,6 +36,19 @@ const PrinterDetail: React.FC = () => {
       navigate(-1);
     } else {
       navigate('/printers');
+    }
+  };
+
+  const handleToggleActive = async () => {
+    if (!printer || toggling) return;
+    try {
+      setToggling(true);
+      await setActive(printer.id, !printer.isActive);
+      setPrinter({ ...printer, isActive: !printer.isActive });
+    } catch {
+      // optionally surface an error message
+    } finally {
+      setToggling(false);
     }
   };
 
@@ -58,9 +72,6 @@ const PrinterDetail: React.FC = () => {
           <h1 className="text-2xl font-bold">{printer.name}</h1>
         </div>
         <div className="flex items-center space-x-2">
-          <button onClick={() => setActive(printer.id, !printer.isActive)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${printer.isActive ? 'bg-blue-600' : 'bg-gray-300'}`}>
-            <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${printer.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-          </button>
           <Button variant="secondary" onClick={() => setEdit(printer)}>{t('common.edit') || 'Edit'}</Button>
           <Button variant="danger" onClick={() => setConfirmDelete(true)}>{t('common.delete') || 'Delete'}</Button>
         </div>
@@ -70,7 +81,21 @@ const PrinterDetail: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><div className="text-sm text-gray-500">{t('printers.name') || 'Name'}</div><div className="font-medium">{printer.name}</div></div>
           <div><div className="text-sm text-gray-500">{t('printers.multicolor') || 'Multicolor'}</div><div className="font-medium">{printer.isMulticolor ? t('common.yes') || 'Yes' : t('common.no') || 'No'}</div></div>
-          <div><div className="text-sm text-gray-500">{t('printers.active') || 'Active'}</div><div className="font-medium">{printer.isActive ? t('common.yes') || 'Yes' : t('common.no') || 'No'}</div></div>
+          <div>
+            <div className="text-sm text-gray-500">{t('printers.active') || 'Active'}</div>
+            <div className="flex items-center space-x-3 mt-1">
+              <button
+                onClick={handleToggleActive}
+                disabled={toggling}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${printer.isActive ? 'bg-blue-600' : 'bg-gray-300'} ${toggling ? 'opacity-50 cursor-not-allowed' : ''}`}
+                aria-pressed={printer.isActive}
+                aria-label={t('printers.active') || 'Active'}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${printer.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+              <span className="font-medium">{printer.isActive ? t('common.yes') || 'Yes' : t('common.no') || 'No'}</span>
+            </div>
+          </div>
           <div className="md:col-span-2"><div className="text-sm text-gray-500">{t('printers.description') || 'Description'}</div><div className="font-medium whitespace-pre-wrap">{printer.description || '-'}</div></div>
         </div>
       </div>
