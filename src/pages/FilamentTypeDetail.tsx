@@ -199,6 +199,7 @@ const FilamentTypeDetail: React.FC = () => {
     if (!editingFilament) return;
     try {
       setFilamentEditError('');
+      const y = window.scrollY;
       // validations similar to type edit
       // validations similar to type edit
       const colorVal = String(editingFilament.color || '').trim();
@@ -254,6 +255,7 @@ const FilamentTypeDetail: React.FC = () => {
   await update(editingFilament.id, payload);
         closeEditingModal();
       }
+      requestAnimationFrame(() => window.scrollTo(0, y));
     } catch (err) {
       console.error('Failed to update filament', err);
       setFilamentEditError((err as any)?.response?.data?.message || String(err));
@@ -262,8 +264,10 @@ const FilamentTypeDetail: React.FC = () => {
 
   const handleDelete = async (fid: number) => {
     try {
+      const y = window.scrollY;
       await remove(fid);
       setDeleteId(null);
+      requestAnimationFrame(() => window.scrollTo(0, y));
     } catch (err) {
       console.error('Failed to delete filament', err);
     }

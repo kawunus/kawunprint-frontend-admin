@@ -109,9 +109,11 @@ const FilamentTypes: React.FC = () => {
                   return;
                 }
                 try {
+                  const y = window.scrollY;
                   await updateType(editing as number, { name, description: editDescription });
                   setEditing(null);
-                  await fetchAll();
+                  await fetchAll({ silent: true });
+                  requestAnimationFrame(() => window.scrollTo(0, y));
                 } catch (err: any) {
                   setEditError(err.response?.data?.message || err.message || t('errors.updateTypeFailed'));
                 }
@@ -132,10 +134,12 @@ const FilamentTypes: React.FC = () => {
               <Button variant="secondary" onClick={() => { setConfirmDeleteId(null); setConfirmDeleteName(null); }}>{t('common.cancel')}</Button>
               <Button variant="danger" className="ml-2" onClick={async () => {
                 try {
+                  const y = window.scrollY;
                   await deleteType(confirmDeleteId as number);
                   setConfirmDeleteId(null);
                   setConfirmDeleteName(null);
-                  await fetchAll();
+                  await fetchAll({ silent: true });
+                  requestAnimationFrame(() => window.scrollTo(0, y));
                 } catch (err: any) {
                   setEditError(err.response?.data?.message || err.message || t('errors.deleteFailed'));
                 }
@@ -195,11 +199,13 @@ const FilamentTypes: React.FC = () => {
                     return;
                   }
                   try {
+                    const y = window.scrollY;
                     await createType({ name, description: typeDescription });
                     setTypeName('');
                     setTypeDescription('');
                     setShowNewType(false);
-                    await fetchAll();
+                    await fetchAll({ silent: true });
+                    requestAnimationFrame(() => window.scrollTo(0, y));
                   } catch (err: any) {
                     setTypeError(
                       err.response?.data?.message ||

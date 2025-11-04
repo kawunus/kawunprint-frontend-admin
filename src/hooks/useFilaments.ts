@@ -8,18 +8,22 @@ export const useFilaments = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAll = useCallback(async () => {
+  // Allow silent refetch to avoid resetting UI/scroll state after mutations
+  const fetchAll = useCallback(async (opts?: { silent?: boolean }) => {
+    const silent = !!opts?.silent;
     try {
-      setLoading(true);
-      setError(null);
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
       const [f, t] = await Promise.all([filamentsApi.getAll(), filamentsApi.getTypes()]);
       setFilaments(f);
       setTypes(t);
     } catch (err) {
       console.error('Error fetching filaments/types:', err);
-      setError('Failed to load filaments');
+      if (!silent) setError('Failed to load filaments');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -30,35 +34,35 @@ export const useFilaments = () => {
   // Accept optional second argument to maintain backward-compat with callers passing a FilamentType (ignored)
   const create = async (data: CreateFilamentRequest, _type?: FilamentType) => {
     const created = await filamentsApi.create(data);
-    await fetchAll(); // Refetch all data
+    await fetchAll({ silent: true }); // Refetch silently
     return created;
   };
 
   const update = async (id: number, data: UpdateFilamentRequest) => {
     const updated = await filamentsApi.update(id, data);
-    await fetchAll(); // Refetch all data
+    await fetchAll({ silent: true }); // Refetch silently
     return updated;
   };
 
   const remove = async (id: number) => {
     await filamentsApi.remove(id);
-    await fetchAll(); // Refetch all data
+    await fetchAll({ silent: true }); // Refetch silently
   };
 
   const createType = async (data: { name: string; description: string }) => {
     const t = await filamentsApi.createType(data as any);
-    await fetchAll(); // Refetch all data
+    await fetchAll({ silent: true }); // Refetch silently
     return t;
   };
 
   const deleteType = async (id: number) => {
     await filamentsApi.deleteType(id);
-    await fetchAll(); // Refetch all data
+    await fetchAll({ silent: true }); // Refetch silently
   };
 
   const updateType = async (id: number, data: { name: string; description: string }) => {
     const updated = await filamentsApi.updateType(id, data as any);
-    await fetchAll(); // Refetch all data
+    await fetchAll({ silent: true }); // Refetch silently
     return updated;
   };
 

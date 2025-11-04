@@ -7,17 +7,24 @@ export const usePrinters = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAll = useCallback(async () => {
+  // fetchAll with optional silent mode to avoid resetting the list view state (scroll, placeholders)
+  const fetchAll = useCallback(async (opts?: { silent?: boolean }) => {
+    const silent = !!opts?.silent;
     try {
-      setLoading(true);
-      setError(null);
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
       const data = await printersApi.getAll();
       setPrinters(data);
     } catch (e: any) {
       console.error('Failed to fetch printers', e);
-      setError(e?.response?.data?.message || e?.message || 'Failed to load printers');
+      if (!silent) {
+        setError(e?.response?.data?.message || e?.message || 'Failed to load printers');
+      }
+      // in silent mode keep previous error/ui state
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -27,22 +34,22 @@ export const usePrinters = () => {
 
   const create = async (payload: CreatePrinterRequest) => {
     await printersApi.create(payload);
-    await fetchAll();
+    await fetchAll({ silent: true });
   };
 
   const update = async (id: number, payload: UpdatePrinterRequest) => {
     await printersApi.update(id, payload);
-    await fetchAll();
+    await fetchAll({ silent: true });
   };
 
   const remove = async (id: number) => {
     await printersApi.remove(id);
-    await fetchAll();
+    await fetchAll({ silent: true });
   };
 
   const setActive = async (id: number, state: boolean) => {
     await printersApi.setActive(id, state);
-    await fetchAll();
+    await fetchAll({ silent: true });
   };
 
   const getById = async (id: number) => {

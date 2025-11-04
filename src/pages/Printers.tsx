@@ -86,6 +86,7 @@ const Printers: React.FC = () => {
     if (!editing) return;
     const err = validate(editing);
     if (err) { setFormError(err); return; }
+    const y = window.scrollY;
     if (isCreating) {
       await create({ name: editing.name.trim(), isMulticolor: !!editing.isMulticolor, isActive: editing.isActive, description: editing.description || '' });
     } else {
@@ -94,10 +95,14 @@ const Printers: React.FC = () => {
     setIsCreating(false);
     setEditing(null);
     setFormError('');
+    // restore scroll position after data refetch to keep list position
+    requestAnimationFrame(() => window.scrollTo(0, y));
   };
 
   const toggleActive = async (p: Printer) => {
+    const y = window.scrollY;
     await setActive(p.id, !p.isActive);
+    requestAnimationFrame(() => window.scrollTo(0, y));
   };
 
   return (
@@ -306,7 +311,7 @@ const Printers: React.FC = () => {
             <p className="mb-4">{t('printers.confirmDelete') || 'Are you sure you want to delete this printer?'}</p>
             <div className="flex justify-end">
               <Button variant="secondary" onClick={() => setDeleteId(null)}>{t('common.cancel') || 'Cancel'}</Button>
-              <Button variant="danger" className="ml-2" onClick={async () => { await remove(deleteId as number); setDeleteId(null); }}>{t('common.delete') || 'Delete'}</Button>
+              <Button variant="danger" className="ml-2" onClick={async () => { const y = window.scrollY; await remove(deleteId as number); setDeleteId(null); requestAnimationFrame(() => window.scrollTo(0, y)); }}>{t('common.delete') || 'Delete'}</Button>
             </div>
           </div>
         </div>

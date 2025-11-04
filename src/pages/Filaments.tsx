@@ -142,6 +142,7 @@ export const Filaments: React.FC = () => {
     if (!editingFilament) return;
     try {
       setFilamentEditError('');
+      const y = window.scrollY;
       const colorVal = String(editingFilament.color || '').trim();
       if (!colorVal) { setFilamentEditError(t('errors.colorRequired') || 'Color is required'); return; }
       if (colorVal.length > 30) { setFilamentEditError('Color must be at most 30 characters'); return; }
@@ -169,6 +170,7 @@ export const Filaments: React.FC = () => {
         await update(editingFilament.id, payload);
         closeEditingModal();
       }
+      requestAnimationFrame(() => window.scrollTo(0, y));
     } catch (err) {
       setFilamentEditError((err as any)?.response?.data?.message || String(err));
     }
@@ -176,8 +178,10 @@ export const Filaments: React.FC = () => {
 
   const handleDelete = async (fid: number) => {
     try {
+      const y = window.scrollY;
       await remove(fid);
       setDeleteId(null);
+      requestAnimationFrame(() => window.scrollTo(0, y));
     } catch (err) {
       console.error('Failed to delete filament', err);
     }
