@@ -69,7 +69,7 @@ export const Filaments: React.FC = () => {
 
   const sanitizeDecimal = (value: string) => {
     if (!value) return '';
-    let s = value.replace(/[^0-9.]/g, '');
+    const s = value.replace(/[^0-9.]/g, '');
     const parts = s.split('.');
     if (parts.length <= 1) return parts[0];
     const first = parts.shift();
@@ -130,7 +130,7 @@ export const Filaments: React.FC = () => {
       const active = document.activeElement as HTMLElement | null;
       if (active && typeof active.blur === 'function') active.blur();
       (document.body as HTMLElement).focus?.();
-    } catch {}
+  } catch (e) { void e; }
     setTimeout(() => {
       setEditingFilament(null);
       setFilamentEditError('');

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table } from '../ui/Table';
-import { StatusBadge } from './StatusBadge';
 import { Order } from '../../types';
 
 interface OrderTableProps {

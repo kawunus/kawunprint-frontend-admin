@@ -129,7 +129,7 @@ const FilamentTypeDetail: React.FC = () => {
 
   const sanitizeDecimal = (value: string) => {
     if (!value) return '';
-    let s = value.replace(/[^0-9.]/g, '');
+    const s = value.replace(/[^0-9.]/g, '');
     const parts = s.split('.');
     if (parts.length <= 1) return parts[0];
     const first = parts.shift();
@@ -185,7 +185,7 @@ const FilamentTypeDetail: React.FC = () => {
       // as a fallback, focus body then blur
       (document.body as HTMLElement).focus?.();
     } catch (e) {
-      // ignore
+      void e; // ignore
     }
     // Delay unmount slightly to give native picker a chance to close
     setTimeout(() => {

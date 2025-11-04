@@ -59,11 +59,11 @@ export interface CreateFilamentRequest {
   hexColor: string;
 }
 
-export interface UpdateFilamentRequest extends CreateFilamentRequest {}
+export type UpdateFilamentRequest = CreateFilamentRequest;
 
 export interface CreateFilamentTypeRequest {
   name: string;
   description: string;
 }
 
-export interface UpdateFilamentTypeRequest extends CreateFilamentTypeRequest {}
+export type UpdateFilamentTypeRequest = CreateFilamentTypeRequest;
