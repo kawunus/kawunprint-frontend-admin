@@ -1,0 +1,3 @@
+#!/bin/sh
+# Husky v9+: don't source deprecated _/husky.sh shim
+npx lint-staged
