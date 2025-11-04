@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
@@ -96,6 +96,17 @@ function App() {
               <ProtectedRoute>
                 <Header />
                 <FilamentTypes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/filament-types/:slug"
+            element={
+              <ProtectedRoute>
+                <Header />
+                <Suspense fallback={<div />}> 
+                  {React.createElement(lazy(() => import('./pages/FilamentTypeDetail')))}
+                </Suspense>
               </ProtectedRoute>
             }
           />

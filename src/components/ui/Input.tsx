@@ -9,6 +9,8 @@ interface InputProps {
   /** number of rows when multiline */
   rows?: number;
   className?: string;
+  /** render a custom counter element (replaces default maxLength counter) */
+  customCounter?: React.ReactNode;
   // allow other native props (input/textarea) — use index signature to avoid type conflicts
   [key: string]: any;
 }
@@ -76,10 +78,14 @@ export const Input: React.FC<InputProps> = ({
         ) : (
           <div />
         )}
-        {typeof max === 'number' && (
-          <p className={"mt-1 text-sm " + (reached ? 'text-red-600' : 'text-gray-500')}>
-            {length} / {max}{reached ? ` — ${t('input.maximumReached')}` : ''}
-          </p>
+        {props.customCounter ? (
+          <div className="mt-1">{props.customCounter}</div>
+        ) : (
+          typeof max === 'number' && (
+            <p className={"mt-1 text-sm " + (reached ? 'text-red-600' : 'text-gray-500')}>
+              {length} / {max}{reached ? ` — ${t('input.maximumReached')}` : ''}
+            </p>
+          )
         )}
       </div>
     </div>

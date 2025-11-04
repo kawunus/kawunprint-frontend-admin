@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFilaments } from '../hooks/useFilaments';
 import { Button } from '../components/ui/Button';
@@ -7,6 +8,7 @@ import { Input } from '../components/ui/Input';
 const FilamentTypes: React.FC = () => {
   const { types, createType, deleteType, fetchAll, updateType } = useFilaments();
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [showNewType, setShowNewType] = useState(false);
   const [typeName, setTypeName] = useState('');
   const [typeDescription, setTypeDescription] = useState('');
@@ -279,8 +281,7 @@ const FilamentTypes: React.FC = () => {
                     variant="primary"
                     size="sm"
                     className="w-full justify-center"
-                    onClick={() => {
-                    }}
+                    onClick={() => navigate(`/filament-types/${encodeURIComponent(tp.name)}`)}
                   >
                     {t('common.details') || 'Details'}
                   </Button>

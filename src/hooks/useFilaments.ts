@@ -29,35 +29,35 @@ export const useFilaments = () => {
 
   const create = async (data: CreateFilamentRequest) => {
     const created = await filamentsApi.create(data);
-    setFilaments(prev => [created, ...prev]);
+    await fetchAll(); // Refetch all data
     return created;
   };
 
   const update = async (id: number, data: UpdateFilamentRequest) => {
     const updated = await filamentsApi.update(id, data);
-    setFilaments(prev => prev.map(p => p.id === id ? updated : p));
+    await fetchAll(); // Refetch all data
     return updated;
   };
 
   const remove = async (id: number) => {
     await filamentsApi.remove(id);
-    setFilaments(prev => prev.filter(p => p.id !== id));
+    await fetchAll(); // Refetch all data
   };
 
   const createType = async (data: { name: string; description: string }) => {
     const t = await filamentsApi.createType(data as any);
-    setTypes(prev => [t, ...prev]);
+    await fetchAll(); // Refetch all data
     return t;
   };
 
   const deleteType = async (id: number) => {
     await filamentsApi.deleteType(id);
-    setTypes(prev => prev.filter(t => t.id !== id));
+    await fetchAll(); // Refetch all data
   };
 
   const updateType = async (id: number, data: { name: string; description: string }) => {
     const updated = await filamentsApi.updateType(id, data as any);
-    setTypes(prev => prev.map(p => p.id === id ? updated : p));
+    await fetchAll(); // Refetch all data
     return updated;
   };
 
