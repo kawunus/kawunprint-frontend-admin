@@ -84,6 +84,15 @@ const FilamentTypeDetail: React.FC = () => {
 
   }, [slug, types, allFilaments, dataLoading, dataError]);
 
+  const handleBack = () => {
+    // Go back in history if possible; otherwise, navigate to types list
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/filament-types');
+    }
+  };
+
   if (dataLoading && !type) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -97,7 +106,7 @@ const FilamentTypeDetail: React.FC = () => {
       <div className="p-6">
         <div className="rounded-md bg-red-50 p-4">
           <div className="text-red-700">{error || t('filaments.typeNotFound') || 'Type not found'}</div>
-          <Button onClick={() => navigate('/filament-types')} className="mt-2">
+          <Button onClick={handleBack} className="mt-2">
             {t('common.back') || 'Back'}
           </Button>
         </div>
@@ -280,7 +289,7 @@ const FilamentTypeDetail: React.FC = () => {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <Button onClick={() => navigate('/filament-types')} variant="secondary">
+          <Button onClick={handleBack} variant="secondary">
             {t('common.back') || 'Back'}
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{type.name}</h1>
