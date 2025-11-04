@@ -8,13 +8,14 @@ import { Printer } from '../types';
 
 const PrinterDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { getById, update, setActive } = usePrinters();
+  const { getById, update, setActive, remove } = usePrinters();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [printer, setPrinter] = useState<Printer | null>(null);
   const [loading, setLoading] = useState(true);
   const [edit, setEdit] = useState<Printer | null>(null);
   const [err, setErr] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -28,6 +29,14 @@ const PrinterDetail: React.FC = () => {
     };
     load();
   }, [id]);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/printers');
+    }
+  };
 
   const save = async () => {
     if (!edit) return;
@@ -45,7 +54,7 @@ const PrinterDetail: React.FC = () => {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Button variant="secondary" onClick={() => navigate('/printers')}>{t('common.back') || 'Back'}</Button>
+          <Button variant="secondary" onClick={handleBack}>{t('common.back') || 'Back'}</Button>
           <h1 className="text-2xl font-bold">{printer.name}</h1>
         </div>
         <div className="flex items-center space-x-2">
@@ -53,6 +62,7 @@ const PrinterDetail: React.FC = () => {
             <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${printer.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>
           <Button variant="secondary" onClick={() => setEdit(printer)}>{t('common.edit') || 'Edit'}</Button>
+          <Button variant="danger" onClick={() => setConfirmDelete(true)}>{t('common.delete') || 'Delete'}</Button>
         </div>
       </div>
 
@@ -86,6 +96,36 @@ const PrinterDetail: React.FC = () => {
             <div className="mt-4">
               <Button variant="primary" onClick={save}>{t('common.save') || 'Save'}</Button>
               <Button variant="secondary" className="ml-2" onClick={() => setEdit(null)}>{t('common.cancel') || 'Cancel'}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setConfirmDelete(false)} />
+          <div className="bg-white p-6 rounded shadow-lg z-50 w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-3">{t('common.confirm') || 'Confirm'}</h3>
+            <p className="mb-4">{t('printers.confirmDelete') || 'Are you sure you want to delete this printer?'}</p>
+            <div className="flex justify-end">
+              <Button variant="secondary" onClick={() => setConfirmDelete(false)}>{t('common.cancel') || 'Cancel'}</Button>
+              <Button
+                variant="danger"
+                className="ml-2"
+                onClick={async () => {
+                  try {
+                    await remove(printer!.id);
+                    setConfirmDelete(false);
+                    handleBack();
+                  } catch {
+                    // optionally show error
+                    setConfirmDelete(false);
+                  }
+                }}
+              >
+                {t('common.delete') || 'Delete'}
+              </Button>
             </div>
           </div>
         </div>
