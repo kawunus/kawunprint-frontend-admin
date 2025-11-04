@@ -67,3 +67,20 @@ export interface CreateFilamentTypeRequest {
 }
 
 export type UpdateFilamentTypeRequest = CreateFilamentTypeRequest;
+// Printers
+export interface Printer {
+  id: number;
+  name: string;
+  isMulticolor: boolean;
+  isActive: boolean;
+  description?: string | null;
+}
+
+export interface CreatePrinterRequest {
+  name: string;
+  isMulticolor: boolean;
+  isActive?: boolean;
+  description?: string | null;
+}
+
+export type UpdatePrinterRequest = CreatePrinterRequest;

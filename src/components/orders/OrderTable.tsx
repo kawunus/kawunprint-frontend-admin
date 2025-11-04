@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table } from '../ui/Table';
 import { Order } from '../../types';
+import { Button } from '../ui/Button';
 
 interface OrderTableProps {
   orders: Order[];
@@ -65,12 +66,17 @@ export const OrderTable: React.FC<OrderTableProps> = ({
       key: 'actions',
       title: 'Actions',
       render: (_: any, row: Order) => (
-        <button
-          onClick={() => navigate(`/orders/${row.id}`)}
-          className="text-blue-600 hover:text-blue-900 font-medium"
-        >
-          View Details
-        </button>
+        <div className="flex flex-col items-stretch gap-2 min-w-[220px]">
+          {/* Details button placed below other actions (if any) and styled blue */}
+          <Button
+            onClick={() => navigate(`/orders/${row.id}`)}
+            variant="primary"
+            size="sm"
+            className="w-full"
+          >
+            View Details
+          </Button>
+        </div>
       ),
     },
   ];
