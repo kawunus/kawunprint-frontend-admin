@@ -27,7 +27,8 @@ export const useFilaments = () => {
     fetchAll();
   }, [fetchAll]);
 
-  const create = async (data: CreateFilamentRequest) => {
+  // Accept optional second argument to maintain backward-compat with callers passing a FilamentType (ignored)
+  const create = async (data: CreateFilamentRequest, _type?: FilamentType) => {
     const created = await filamentsApi.create(data);
     await fetchAll(); // Refetch all data
     return created;

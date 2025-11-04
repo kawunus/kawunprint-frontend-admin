@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { filamentsApi } from '../api/filaments';
 import { Filament, FilamentType } from '../types';
 import { useFilaments } from '../hooks/useFilaments';
 import { Button } from '../components/ui/Button';
@@ -252,7 +251,7 @@ const FilamentTypeDetail: React.FC = () => {
           console.error('No id on editingFilament, aborting update');
           return;
         }
-        const updated = await update(editingFilament.id, payload);
+  await update(editingFilament.id, payload);
         closeEditingModal();
       }
     } catch (err) {
