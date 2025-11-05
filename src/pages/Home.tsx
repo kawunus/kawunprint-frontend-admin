@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrders } from '../hooks/useOrders';
 import { useFilaments } from '../hooks/useFilaments';
 import { usePrinters } from '../hooks/usePrinters';
-import { getUserNameFromToken } from '../utils/jwt';
+import { getUserInfoFromToken } from '../utils/jwt';
 
 // user name extraction moved to utils/jwt
 
@@ -25,7 +25,7 @@ export const Home: React.FC = () => {
 
   const [now, setNow] = useState<Date>(new Date());
 
-  const user = getUserNameFromToken();
+  const user = getUserInfoFromToken();
 
   // Live clock
   useEffect(() => {
@@ -71,7 +71,7 @@ export const Home: React.FC = () => {
         {/* Greeting widget */}
         <div className="lg:col-span-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6 shadow-lg">
           <div className="text-2xl sm:text-3xl font-semibold">
-            {greeting}{user.full ? `, ${user.full}` : user.firstName ? `, ${user.firstName}` : ''}
+            {greeting}{user ? (user.full ? `, ${user.full}` : user.firstName ? `, ${user.firstName}` : '') : ''}
           </div>
           <div className="text-sm mt-1 opacity-90">{t(`home.gags.${quipIndex}`) || ''}</div>
         </div>

@@ -4,10 +4,12 @@ import { ordersApi } from '../api/orders';
 import { Order, OrderHistory } from '../types';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/orders/StatusBadge';
+import { useTranslation } from 'react-i18next';
 
 export const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [order, setOrder] = useState<Order | null>(null);
   const [history, setHistory] = useState<OrderHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,22 +61,25 @@ export const OrderDetail: React.FC = () => {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <Button onClick={() => navigate('/orders')} variant="secondary">
-            Back
+          <Button
+            onClick={() => {
+              if (window.history.length > 1) navigate(-1); else navigate('/orders');
+            }}
+            variant="secondary"
+          >
+            {t('common.back') || 'Back'}
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Order #{order.id}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('orders.title') || 'Orders'} #{order.id}</h1>
           <StatusBadge status={order.status} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Order Information</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('orders.info') || 'Order Information'}</h2>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Customer:</span>
+              <span className="text-gray-600">{t('orders.customer') || 'Customer'}:</span>
               <span>{order.customer.firstName} {order.customer.lastName}</span>
             </div>
             <div className="flex justify-between">
@@ -82,44 +87,42 @@ export const OrderDetail: React.FC = () => {
               <span>{order.customer.email}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Phone:</span>
+              <span className="text-gray-600">{t('orders.phone') || 'Phone'}:</span>
               <span>{order.customer.phoneNumber}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Created:</span>
+              <span className="text-gray-600">{t('orders.created') || 'Created'}:</span>
               <span>{new Date(order.createdAt).toLocaleString()}</span>
             </div>
             {order.completedAt && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Completed:</span>
+                <span className="text-gray-600">{t('orders.completed') || 'Completed'}:</span>
                 <span>{new Date(order.completedAt).toLocaleString()}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-gray-600">Total Price:</span>
+              <span className="text-gray-600">{t('orders.total') || 'Total Price'}:</span>
               <span className="font-semibold">{order.totalPrice.toFixed(2)} BYN</span>
             </div>
           </div>
 
           {order.comment && (
             <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-600">Comment</h3>
+              <h3 className="text-sm font-medium text-gray-600">{t('orders.comment') || 'Comment'}</h3>
               <p className="mt-1 text-sm text-gray-900">{order.comment}</p>
             </div>
           )}
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Order History</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('orders.history') || 'Order History'}</h2>
           <div className="space-y-4">
             {history.map((entry) => (
               <div key={entry.id} className="border-l-4 border-blue-500 pl-4 py-2">
                 <div className="flex justify-between items-start">
                   <div>
                     <StatusBadge status={entry.status} />
-                    <p className="text-sm text-gray-600 mt-1">
-                      by {entry.employee.firstName} {entry.employee.lastName}
-                    </p>
+                    <p className="text-sm text-gray-600 mt-1">{t('orders.by') || 'by'} {entry.employee.firstName} {entry.employee.lastName}</p>
                     {entry.comment && (
                       <p className="text-sm text-gray-700 mt-1">{entry.comment}</p>
                     )}
@@ -131,7 +134,7 @@ export const OrderDetail: React.FC = () => {
               </div>
             ))}
             {history.length === 0 && (
-              <p className="text-gray-500 text-center py-4">No history available</p>
+              <p className="text-gray-500 text-center py-4">{t('orders.noHistory') || 'No history available'}</p>
             )}
           </div>
         </div>

@@ -19,6 +19,14 @@ export interface Order {
   comment?: string;
 }
 
+export interface OrderHistory {
+  id: number;
+  status: string;
+  employee: User;
+  comment?: string;
+  createdAt: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

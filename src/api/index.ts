@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getUserIdFromToken } from '../utils/jwt';
 
 // In development, force same-origin so Vite proxy handles /api (no CORS/preflight).
 // In production, use VITE_API_BASE_URL when provided.
@@ -23,6 +24,11 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('✅ Token added to headers');
+      const userId = getUserIdFromToken();
+      if (userId != null) {
+        // Provide user id for backend auditing; header name agreed with backend
+        (config.headers as any)['X-User-Id'] = String(userId);
+      }
     } else {
       console.log('❌ No token found in localStorage');
     }
