@@ -4,6 +4,7 @@ import { ordersApi } from '../api/orders';
 import { Order, OrderHistory } from '../types';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/orders/StatusBadge';
+import { formatLocalDateTime } from '../utils/datetime';
 import { useTranslation } from 'react-i18next';
 
 export const OrderDetail: React.FC = () => {
@@ -92,12 +93,12 @@ export const OrderDetail: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">{t('orders.created') || 'Created'}:</span>
-              <span>{new Date(order.createdAt).toLocaleString()}</span>
+              <span>{formatLocalDateTime(order.createdAt)}</span>
             </div>
             {order.completedAt && (
               <div className="flex justify-between">
                 <span className="text-gray-600">{t('orders.completed') || 'Completed'}:</span>
-                <span>{new Date(order.completedAt).toLocaleString()}</span>
+                <span>{formatLocalDateTime(order.completedAt)}</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -128,7 +129,7 @@ export const OrderDetail: React.FC = () => {
                     )}
                   </div>
                   <span className="text-xs text-gray-500">
-                    {new Date(entry.createdAt).toLocaleString()}
+                    {formatLocalDateTime(entry.createdAt)}
                   </span>
                 </div>
               </div>

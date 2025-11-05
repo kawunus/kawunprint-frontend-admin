@@ -2,13 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useOrders } from '../hooks/useOrders';
 import { Button } from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
+import { formatLocalDateTime, parseDbDate } from '../utils/datetime';
 
 export const Orders: React.FC = () => {
   const { orders, loading, error, refreshOrders, updateOrderStatus } = useOrders();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
   const [sortBy, setSortBy] = useState<'date' | 'total' | 'status' | 'customer'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const { t, i18n } = useTranslation();
   const isRu = i18n.language?.startsWith('ru');
   const [showFilters, setShowFilters] = useState(false);
@@ -50,11 +51,11 @@ export const Orders: React.FC = () => {
     }
     if (appliedDateFrom) {
       const fromTs = new Date(appliedDateFrom).getTime();
-      list = list.filter(o => new Date(o.createdAt).getTime() >= fromTs);
+      list = list.filter(o => (parseDbDate(o.createdAt)?.getTime() ?? 0) >= fromTs);
     }
     if (appliedDateTo) {
       const toTs = new Date(appliedDateTo).getTime();
-      list = list.filter(o => new Date(o.createdAt).getTime() <= toTs);
+      list = list.filter(o => (parseDbDate(o.createdAt)?.getTime() ?? 0) <= toTs);
     }
     if (appliedMinTotal) {
       const min = Number(appliedMinTotal);
@@ -80,7 +81,9 @@ export const Orders: React.FC = () => {
     const dir = sortOrder === 'asc' ? 1 : -1;
     return [...filteredOrders].sort((a, b) => {
       if (sortBy === 'date') {
-        return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+        const ad = parseDbDate(a.createdAt)?.getTime() ?? 0;
+        const bd = parseDbDate(b.createdAt)?.getTime() ?? 0;
+        return (ad - bd) * dir;
       }
       if (sortBy === 'total') {
         return (a.totalPrice - b.totalPrice) * dir;
@@ -111,7 +114,7 @@ export const Orders: React.FC = () => {
         <div className="rounded-md bg-red-50 p-4">
           <div className="text-red-700">{error}</div>
           <Button onClick={refreshOrders} className="mt-2">
-            {t('common.apply') || 'Retry'}
+            {t('common.retry') || (isRu ? 'Повторить' : 'Retry')}
           </Button>
         </div>
       </div>
@@ -156,7 +159,7 @@ export const Orders: React.FC = () => {
           ) : null}
 
           <Button onClick={refreshOrders} variant="secondary" className="transform transition-transform duration-150 hover:scale-105">
-            {t('common.apply') || 'Refresh'}
+            {t('common.refresh') || (isRu ? 'Обновить' : 'Refresh')}
           </Button>
         </div>
       </div>
@@ -208,7 +211,7 @@ export const Orders: React.FC = () => {
                 <div className="flex items-center space-x-4 min-w-0">
                   <div className="min-w-0">
                     <div className="font-medium truncate">#{o.id} · {o.customer.firstName} {o.customer.lastName}</div>
-                    <div className="text-sm text-gray-500 truncate">{new Date(o.createdAt).toLocaleString()} · {o.customer.email}</div>
+                    <div className="text-sm text-gray-500 truncate">{formatLocalDateTime(o.createdAt, i18n.language)} · {o.customer.email}</div>
                     <div className="text-xs text-gray-500 truncate">{t('orders.total') || 'Total'}: {o.totalPrice.toFixed(2)} BYN</div>
                   </div>
                 </div>

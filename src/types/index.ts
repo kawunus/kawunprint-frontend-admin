@@ -92,3 +92,15 @@ export interface CreatePrinterRequest {
 }
 
 export type UpdatePrinterRequest = CreatePrinterRequest;
+
+// Printer history
+export interface PrinterHistory {
+  id: number;
+  printerId: number;
+  action?: string;
+  comment?: string;
+  employeeId?: number;
+  employee?: User;
+  createdAt?: string;
+  occurredAt?: string;
+}
