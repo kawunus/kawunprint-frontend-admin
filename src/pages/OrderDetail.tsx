@@ -37,6 +37,12 @@ export const OrderDetail: React.FC = () => {
   const [requestingInfo, setRequestingInfo] = useState<boolean>(false);
   const [infoComment, setInfoComment] = useState<string>('');
   
+  // Design price modal state (for status 13)
+  const [addingDesignPrice, setAddingDesignPrice] = useState<boolean>(false);
+  const [designPrice, setDesignPrice] = useState<string>('');
+  const [designComment, setDesignComment] = useState<string>('');
+  const [designPriceError, setDesignPriceError] = useState<string>('');
+  
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   
@@ -118,6 +124,15 @@ export const OrderDetail: React.FC = () => {
     if (newStatusId === 10) {
       setRequestingInfo(true);
       setInfoComment('');
+      return;
+    }
+    
+    // Special handling for status 13 (В проектировании)
+    if (newStatusId === 13) {
+      setAddingDesignPrice(true);
+      setDesignPrice('');
+      setDesignComment('');
+      setDesignPriceError('');
       return;
     }
     
@@ -223,6 +238,49 @@ export const OrderDetail: React.FC = () => {
       await refreshOrderData();
     } catch (err) {
       console.error('Failed to request additional info:', err);
+    }
+  };
+
+  const confirmAddDesignPrice = async () => {
+    if (!order) return;
+    
+    // Validation
+    const price = Number(designPrice);
+    if (!designPrice || isNaN(price) || price <= 0) {
+      setDesignPriceError('Введите корректную цену');
+      return;
+    }
+    
+    try {
+      const employeeId = getUserIdFromToken();
+      const newTotalPrice = order.totalPrice + price;
+      
+      // Update order status to 13 and add design price
+      await ordersApi.updateOrder(order.id, {
+        employeeId,
+        statusId: 13,
+        totalPrice: newTotalPrice,
+        comment: order.comment || ''
+      });
+      
+      // Add history entry with comment about design price
+      const comment = designComment 
+        ? `Добавлена стоимость проектирования: ${price.toFixed(2)} BYN. ${designComment}`
+        : `Добавлена стоимость проектирования: ${price.toFixed(2)} BYN`;
+      
+      await ordersApi.addOrderHistory(order.id, {
+        statusId: 13,
+        comment
+      });
+      
+      setAddingDesignPrice(false);
+      setDesignPrice('');
+      setDesignComment('');
+      setDesignPriceError('');
+      await refreshOrderData();
+    } catch (err) {
+      console.error('Failed to add design price:', err);
+      setDesignPriceError('Ошибка при добавлении цены');
     }
   };
 
@@ -614,6 +672,66 @@ export const OrderDetail: React.FC = () => {
                 {t('common.confirm') || 'Confirm'}
               </Button>
               <Button variant="secondary" onClick={() => { setRequestingInfo(false); setInfoComment(''); }}>
+                {t('common.cancel') || 'Cancel'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Design Price Modal (Status 13) */}
+      {addingDesignPrice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => { setAddingDesignPrice(false); setDesignPriceError(''); }} />
+          <div className="bg-white rounded shadow-lg z-50 w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-semibold mb-4">
+              В проектировании - добавить стоимость
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Стоимость проектирования *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Введите стоимость в BYN"
+                  value={designPrice}
+                  onChange={e => setDesignPrice(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {designPrice && !isNaN(Number(designPrice)) && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    Новая общая стоимость: {(order!.totalPrice + Number(designPrice)).toFixed(2)} BYN
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Комментарий (необязательно)
+                </label>
+                <textarea
+                  placeholder="Дополнительная информация о проектировании..."
+                  value={designComment}
+                  onChange={e => setDesignComment(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {designPriceError && (
+                <div className="text-red-600 text-sm">{designPriceError}</div>
+              )}
+            </div>
+            
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button onClick={confirmAddDesignPrice}>
+                {t('common.confirm') || 'Confirm'}
+              </Button>
+              <Button variant="secondary" onClick={() => { setAddingDesignPrice(false); setDesignPriceError(''); }}>
                 {t('common.cancel') || 'Cancel'}
               </Button>
             </div>
