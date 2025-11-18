@@ -442,7 +442,7 @@ export const OrderDetail: React.FC = () => {
               disabled={!orderStatuses.length}
             >
               <option value="" disabled>{statusNameById(order.statusId) || 'Select status'}</option>
-              {orderStatuses.filter(status => status.id !== 8).map(status => (
+              {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
                 <option key={status.id} value={status.id}>{status.description}</option>
               ))}
             </select>

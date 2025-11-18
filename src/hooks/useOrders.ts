@@ -4,10 +4,10 @@ import { Order, OrderHistory, OrderStatus } from '../types';
 import { getUserIdFromToken } from '../utils/jwt';
 
 type UpdateOrderRequest = {
-  employeeId?: number | null;
+  employeeId: number | null;
   statusId: number;
-  totalPrice?: number;
-  comment?: string;
+  totalPrice: number;
+  comment: string;
 };
 
 interface UseOrdersReturn {
@@ -115,7 +115,7 @@ export const useOrders = (): UseOrdersReturn => {
         employeeId,
         statusId,
         totalPrice: order.totalPrice,
-        comment: comment ?? order.comment,
+        comment: comment ?? order.comment ?? '',
       };
 
       const updatedOrder = await ordersApi.updateOrder(orderId, updateData);

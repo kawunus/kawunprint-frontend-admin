@@ -14,7 +14,7 @@ export const ordersApi = {
 
   updateOrder: async (
     id: number,
-    orderData: { employeeId?: number | null; statusId: number; totalPrice?: number; comment?: string }
+    orderData: { employeeId: number | null; statusId: number; totalPrice: number; comment: string }
   ): Promise<Order> => {
     const response = await api.put<Order>(`/api/v1/orders/${id}`, orderData);
     return response.data;
@@ -54,5 +54,25 @@ export const ordersApi = {
 
   deleteOrderStatus: async (id: number): Promise<void> => {
     await api.delete(`/api/v1/order-status/${id}`);
+  },
+
+  createOrder: async (data: { customerId: number; statusId: number; totalPrice: number; comment: string }): Promise<Order> => {
+    const response = await api.post<Order>('/api/v1/orders', data, {
+      transformRequest: [(data, headers) => {
+        // Remove X-User-Id header before sending
+        delete headers['X-User-Id'];
+        return JSON.stringify(data);
+      }]
+    });
+    return response.data;
+  },
+
+  deleteOrder: async (id: number): Promise<void> => {
+    await api.delete(`/api/v1/orders/${id}`);
+  },
+
+  consumeFilament: async (orderId: number, data: { filamentId: number; gramsUsed: number; comment?: string }): Promise<Order> => {
+    const response = await api.post<Order>(`/api/v1/orders/${orderId}/consume-filament`, data);
+    return response.data;
   },
 };

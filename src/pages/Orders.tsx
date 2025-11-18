@@ -595,7 +595,7 @@ export const Orders: React.FC = () => {
                       disabled={isStatusLocked || !orderStatuses.length}
                     >
                       <option value="" disabled>{currentStatusName || (t('orders.status.select') || 'Select status')}</option>
-                      {orderStatuses.filter(status => status.id !== 8).map(status => (
+                      {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
                         <option key={status.id} value={status.id}>{status.description}</option>
                       ))}
                     </select>
@@ -646,7 +646,7 @@ export const Orders: React.FC = () => {
                     onChange={(e) => setModalStatusId(e.target.value === '' ? '' : Number(e.target.value))}
                   >
                     <option value="">{t('orders.status.all') || 'All'}</option>
-                    {orderStatuses.filter(status => status.id !== 8).map(status => (
+                    {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
                       <option key={status.id} value={status.id}>{status.description}</option>
                     ))}
                   </select>
@@ -825,7 +825,7 @@ export const Orders: React.FC = () => {
                   required
                 >
                   <option value="" disabled>{t('orders.status.select') || 'Select status'}</option>
-                  {orderStatuses.filter(status => status.id !== 8).map(status => (
+                  {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
                     <option key={status.id} value={status.id}>{status.description}</option>
                   ))}
                 </select>
