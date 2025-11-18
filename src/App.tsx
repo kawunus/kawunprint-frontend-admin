@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
 import { Orders } from './pages/Orders';
 import { OrderDetail } from './pages/OrderDetail';
+import { OrderStatuses } from './pages/OrderStatuses';
 import Home from './pages/Home';
 import Filaments from './pages/Filaments';
 import FilamentTypes from './pages/FilamentTypes';
@@ -72,6 +73,15 @@ function App() {
               <ProtectedRoute>
                 <Header />
                 <OrderDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/order-statuses"
+            element={
+              <ProtectedRoute>
+                <Header />
+                <OrderStatuses />
               </ProtectedRoute>
             }
           />

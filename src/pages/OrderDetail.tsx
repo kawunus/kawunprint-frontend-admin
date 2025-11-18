@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ordersApi } from '../api/orders';
-import { Order, OrderHistory } from '../types';
+import { Order, OrderHistory, OrderStatus } from '../types';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/orders/StatusBadge';
 import { formatLocalDateTime } from '../utils/datetime';
@@ -13,19 +13,27 @@ export const OrderDetail: React.FC = () => {
   const { t } = useTranslation();
   const [order, setOrder] = useState<Order | null>(null);
   const [history, setHistory] = useState<OrderHistory[]>([]);
+  const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const statusNameById = (id?: number): string => {
+    if (id == null) return '';
+    return orderStatuses.find(s => s.id === id)?.description || String(id);
+  };
 
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
         setLoading(true);
-        const [orderData, historyData] = await Promise.all([
+        const [orderData, historyData, statusesData] = await Promise.all([
           ordersApi.getOrderById(Number(id)),
           ordersApi.getOrderHistory(Number(id)),
+          ordersApi.getOrderStatuses(),
         ]);
         setOrder(orderData);
         setHistory(historyData);
+        setOrderStatuses(statusesData);
       } catch (err) {
         setError('Failed to fetch order details');
         console.error('Error:', err);
@@ -71,7 +79,7 @@ export const OrderDetail: React.FC = () => {
             {t('common.back') || 'Back'}
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{t('orders.title') || 'Orders'} #{order.id}</h1>
-          <StatusBadge status={order.status} />
+          <StatusBadge status={order.status || statusNameById(order.statusId)} />
         </div>
       </div>
 
@@ -118,11 +126,13 @@ export const OrderDetail: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">{t('orders.history') || 'Order History'}</h2>
           <div className="space-y-4">
-            {history.map((entry) => (
+            {history.map((entry) => {
+              const statusText = entry.status || statusNameById(entry.statusId);
+              return (
               <div key={entry.id} className="border-l-4 border-blue-500 pl-4 py-2">
                 <div className="flex justify-between items-start">
                   <div>
-                    <StatusBadge status={entry.status} />
+                    <StatusBadge status={statusText} />
                     <p className="text-sm text-gray-600 mt-1">{t('orders.by') || 'by'} {entry.employee.firstName} {entry.employee.lastName}</p>
                     {entry.comment && (
                       <p className="text-sm text-gray-700 mt-1">{entry.comment}</p>
@@ -133,7 +143,8 @@ export const OrderDetail: React.FC = () => {
                   </span>
                 </div>
               </div>
-            ))}
+              );
+            })}
             {history.length === 0 && (
               <p className="text-gray-500 text-center py-4">{t('orders.noHistory') || 'No history available'}</p>
             )}

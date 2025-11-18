@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { formatLocalDateTime, parseDbDate } from '../utils/datetime';
 
 export const Orders: React.FC = () => {
-  const { orders, loading, error, refreshOrders, updateOrderStatus } = useOrders();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const { orders, orderStatuses, loading, error, refreshOrders, updateOrderStatus } = useOrders();
+  const [statusFilter, setStatusFilter] = useState<'all' | number>('all');
   const [search, setSearch] = useState<string>('');
   const [sortBy, setSortBy] = useState<'date' | 'total' | 'status' | 'customer'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -14,15 +14,13 @@ export const Orders: React.FC = () => {
   const isRu = i18n.language?.startsWith('ru');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Modal temp filters
-  const [modalStatus, setModalStatus] = useState<'all' | 'pending' | 'processing' | 'completed' | 'cancelled'>('all');
+  const [modalStatus, setModalStatus] = useState<'all' | number>('all');
   const [modalDateFrom, setModalDateFrom] = useState<string>('');
   const [modalDateTo, setModalDateTo] = useState<string>('');
   const [modalMinTotal, setModalMinTotal] = useState<string>('');
   const [modalMaxTotal, setModalMaxTotal] = useState<string>('');
   const [modalCustomer, setModalCustomer] = useState<string>('');
 
-  // Applied filters
   const [appliedDateFrom, setAppliedDateFrom] = useState<string>('');
   const [appliedDateTo, setAppliedDateTo] = useState<string>('');
   const [appliedMinTotal, setAppliedMinTotal] = useState<string>('');
@@ -37,9 +35,15 @@ export const Orders: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const statusNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    orderStatuses.forEach(s => map.set(s.id, s.description));
+    return (id?: number, fallback?: string) => (id != null ? map.get(id) : undefined) || fallback || '';
+  }, [orderStatuses]);
+
   const filteredOrders = useMemo(() => {
     let list = orders;
-    if (statusFilter !== 'all') list = list.filter(o => String(o.status).toLowerCase() === statusFilter);
+    if (statusFilter !== 'all') list = list.filter(o => (o.statusId ?? -1) === statusFilter);
     // Applied modal filters
     if (appliedCustomer.trim()) {
       const q = appliedCustomer.trim().toLowerCase();
@@ -89,7 +93,9 @@ export const Orders: React.FC = () => {
         return (a.totalPrice - b.totalPrice) * dir;
       }
       if (sortBy === 'status') {
-        return String(a.status).localeCompare(String(b.status)) * dir;
+        const nameA = statusNameById(a.statusId, a.status).toLowerCase();
+        const nameB = statusNameById(b.statusId, b.status).toLowerCase();
+        return nameA.localeCompare(nameB) * dir;
       }
       if (sortBy === 'customer') {
         const A = `${a.customer.firstName || ''} ${a.customer.lastName || ''}`.trim().toLowerCase();
@@ -100,9 +106,9 @@ export const Orders: React.FC = () => {
     });
   }, [filteredOrders, sortBy, sortOrder]);
 
-  const handleStatusChange = async (orderId: number, status: string) => {
+  const handleStatusChange = async (orderId: number, statusId: number) => {
     try {
-      await updateOrderStatus(orderId, status);
+      await updateOrderStatus(orderId, statusId);
     } catch (err) {
       console.error('Failed to update order status:', err);
     }
@@ -206,7 +212,14 @@ export const Orders: React.FC = () => {
           <div className="rounded-md bg-red-50 p-4 text-red-700">{error}</div>
         ) : (
           <div className="space-y-3">
-            {sorted.map(o => (
+            {sorted.map(o => {
+              const currentStatusId = o.statusId ?? orderStatuses.find(s => s.description.toLowerCase() === String(o.status).toLowerCase())?.id;
+              const currentStatusName = statusNameById(currentStatusId, o.status);
+              const isCompleted = currentStatusName && currentStatusName.toLowerCase() === 'завершён';
+              const placeholderLabel = orderStatuses.length
+                ? (currentStatusName || t('orders.status.select') || (isRu ? 'выберите статус' : 'Select status'))
+                : (currentStatusName || t('orders.status.loading') || (isRu ? 'загрузка статусов' : 'Loading statuses'));
+              return (
               <div key={o.id} className="flex items-center justify-between p-3 border rounded">
                 <div className="flex items-center space-x-4 min-w-0">
                   <div className="min-w-0">
@@ -216,17 +229,20 @@ export const Orders: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-700">{t('orders.status.' + String(o.status).toLowerCase()) || o.status}</span>
                   <select
-                    value={o.status}
-                    onChange={(e) => handleStatusChange(o.id, e.target.value)}
-                    className={`border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 rounded ${o.status === 'completed' ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                    disabled={o.status === 'completed'}
+                    value={currentStatusId != null ? String(currentStatusId) : ''}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (Number.isNaN(value)) return;
+                      handleStatusChange(o.id, value);
+                    }}
+                    className={`border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 rounded ${isCompleted ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                    disabled={isCompleted || !orderStatuses.length}
                   >
-                    <option value="pending">{t('orders.status.pending') || 'Pending'}</option>
-                    <option value="processing">{t('orders.status.processing') || 'Processing'}</option>
-                    <option value="completed">{t('orders.status.completed') || 'Completed'}</option>
-                    <option value="cancelled">{t('orders.status.cancelled') || 'Cancelled'}</option>
+                    <option value="" disabled>{placeholderLabel}</option>
+                    {orderStatuses.map(status => (
+                      <option key={status.id} value={status.id}>{status.description}</option>
+                    ))}
                   </select>
                   <Button
                     onClick={() => window.location.assign(`/orders/${o.id}`)}
@@ -238,7 +254,8 @@ export const Orders: React.FC = () => {
                   </Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
             {sorted.length === 0 && (
               <p className="text-gray-500 text-center py-6">{t('table.noData') || 'No data available'}</p>
             )}
@@ -255,12 +272,15 @@ export const Orders: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('orders.filters.status') || 'Status'}</label>
-                <select className="border rounded px-2 py-2 text-sm w-full" value={modalStatus} onChange={(e) => setModalStatus(e.target.value as any)}>
+                <select
+                  className="border rounded px-2 py-2 text-sm w-full"
+                  value={modalStatus === 'all' ? 'all' : String(modalStatus)}
+                  onChange={(e) => setModalStatus(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                >
                   <option value="all">{t('orders.status.all') || 'All'}</option>
-                  <option value="pending">{t('orders.status.pending') || 'Pending'}</option>
-                  <option value="processing">{t('orders.status.processing') || 'Processing'}</option>
-                  <option value="completed">{t('orders.status.completed') || 'Completed'}</option>
-                  <option value="cancelled">{t('orders.status.cancelled') || 'Cancelled'}</option>
+                  {orderStatuses.map(status => (
+                    <option key={status.id} value={status.id}>{status.description}</option>
+                  ))}
                 </select>
               </div>
               <div>

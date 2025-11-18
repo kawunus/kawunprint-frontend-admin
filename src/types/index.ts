@@ -13,6 +13,7 @@ export interface Order {
   customer: User;
   employee?: User;
   status: string;
+  statusId?: number;
   totalPrice: number;
   createdAt: string;
   completedAt?: string;
@@ -21,10 +22,16 @@ export interface Order {
 
 export interface OrderHistory {
   id: number;
-  status: string;
+  status?: string;
+  statusId?: number;
   employee: User;
   comment?: string;
   createdAt: string;
+}
+
+export interface OrderStatus {
+  id: number;
+  description: string;
 }
 
 export interface LoginRequest {
@@ -35,7 +42,7 @@ export interface LoginRequest {
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
-  message?: T; // Добавляем message поле
+  message?: T;
 }
 
 export interface BaseResponse {
@@ -75,7 +82,7 @@ export interface CreateFilamentTypeRequest {
 }
 
 export type UpdateFilamentTypeRequest = CreateFilamentTypeRequest;
-// Printers
+
 export interface Printer {
   id: number;
   name: string;
@@ -93,7 +100,6 @@ export interface CreatePrinterRequest {
 
 export type UpdatePrinterRequest = CreatePrinterRequest;
 
-// Printer history
 export interface PrinterHistory {
   id: number;
   printerId: number;
