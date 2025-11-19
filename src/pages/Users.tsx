@@ -15,12 +15,12 @@ export const Users: React.FC = () => {
 
   // Filters - Applied filters (used for actual filtering)
   const [searchQuery, setSearchQuery] = useState('');
-  const [appliedRoleFilter, setAppliedRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT'>('ALL');
+  const [appliedRoleFilter, setAppliedRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT' | 'ANALYST'>('ALL');
   const [appliedStatusFilter, setAppliedStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [showFilters, setShowFilters] = useState(false);
 
   // Modal filters (temporary state while modal is open)
-  const [modalRoleFilter, setModalRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT'>('ALL');
+  const [modalRoleFilter, setModalRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT' | 'ANALYST'>('ALL');
   const [modalStatusFilter, setModalStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
 
   // Edit modal
@@ -206,6 +206,8 @@ export const Users: React.FC = () => {
               ? 'bg-purple-100 text-purple-800'
               : value === 'EMPLOYEE'
               ? 'bg-blue-100 text-blue-800'
+              : value === 'ANALYST'
+              ? 'bg-green-100 text-green-800'
               : 'bg-gray-100 text-gray-800'
           }`}
         >
@@ -349,6 +351,7 @@ export const Users: React.FC = () => {
                   <option value="ALL">{t('users.allRoles') || 'All Roles'}</option>
                   <option value="ADMIN">ADMIN</option>
                   <option value="EMPLOYEE">EMPLOYEE</option>
+                  <option value="ANALYST">ANALYST</option>
                   <option value="CLIENT">CLIENT</option>
                 </select>
               </div>
@@ -494,6 +497,7 @@ export const Users: React.FC = () => {
                 >
                   <option value="ADMIN">ADMIN</option>
                   <option value="EMPLOYEE">EMPLOYEE</option>
+                  <option value="ANALYST">ANALYST</option>
                   <option value="CLIENT">CLIENT</option>
                 </select>
               </div>
@@ -632,6 +636,7 @@ export const Users: React.FC = () => {
                 >
                   <option value="ADMIN">ADMIN</option>
                   <option value="EMPLOYEE">EMPLOYEE</option>
+                  <option value="ANALYST">ANALYST</option>
                   <option value="CLIENT">CLIENT</option>
                 </select>
               </div>

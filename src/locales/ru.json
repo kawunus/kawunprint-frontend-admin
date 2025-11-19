@@ -286,5 +286,7 @@
   "accessDenied.title": "Доступ запрещен",
   "accessDenied.message": "У вас нет прав для доступа к этой странице :(",
   "accessDenied.description": "Только администраторы могут получить доступ к панели управления.",
-  "accessDenied.backToLogin": "Вернуться к входу"
+  "accessDenied.adminOnly": "Эта страница доступна только администраторам.",
+  "accessDenied.backToLogin": "Вернуться к входу",
+  "common.backToHome": "Вернуться на главную"
 }

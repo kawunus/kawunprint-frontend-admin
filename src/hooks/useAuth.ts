@@ -6,6 +6,8 @@ import { getUserInfoFromToken } from '../utils/jwt';
 interface UseAuthReturn {
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isAnalyst: boolean;
+  userRole: string | null;
   login: (credentials: LoginRequest) => Promise<string>;
   logout: () => void;
   isLoading: boolean;
@@ -14,6 +16,8 @@ interface UseAuthReturn {
 export const useAuth = (): UseAuthReturn => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isAnalyst, setIsAnalyst] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Функция для проверки аутентификации
@@ -23,14 +27,20 @@ export const useAuth = (): UseAuthReturn => {
     
     if (token) {
       const userInfo = getUserInfoFromToken();
-      const userIsAdmin = userInfo?.role?.toLowerCase() === 'admin';
-      console.log('👤 User role:', userInfo?.role, 'isAdmin:', userIsAdmin);
+      const role = userInfo?.role?.toUpperCase();
+      const userIsAdmin = role === 'ADMIN';
+      const userIsAnalyst = role === 'ANALYST';
+      console.log('👤 User role:', userInfo?.role, 'isAdmin:', userIsAdmin, 'isAnalyst:', userIsAnalyst);
       
       setIsAuthenticated(true);
       setIsAdmin(userIsAdmin);
+      setIsAnalyst(userIsAnalyst);
+      setUserRole(role || null);
     } else {
       setIsAuthenticated(false);
       setIsAdmin(false);
+      setIsAnalyst(false);
+      setUserRole(null);
     }
     
     setIsLoading(false);
@@ -56,12 +66,16 @@ export const useAuth = (): UseAuthReturn => {
       
       // Проверяем роль
       const userInfo = getUserInfoFromToken();
-      const userIsAdmin = userInfo?.role?.toLowerCase() === 'admin';
-      console.log('👤 User role after login:', userInfo?.role, 'isAdmin:', userIsAdmin);
+      const role = userInfo?.role?.toUpperCase();
+      const userIsAdmin = role === 'ADMIN';
+      const userIsAnalyst = role === 'ANALYST';
+      console.log('👤 User role after login:', userInfo?.role, 'isAdmin:', userIsAdmin, 'isAnalyst:', userIsAnalyst);
       
       // Обновляем состояние
       setIsAuthenticated(true);
       setIsAdmin(userIsAdmin);
+      setIsAnalyst(userIsAnalyst);
+      setUserRole(role || null);
       
       console.log('🎉 Login completed successfully');
       return token;
@@ -69,6 +83,8 @@ export const useAuth = (): UseAuthReturn => {
       console.error('❌ Login failed:', error);
       setIsAuthenticated(false);
       setIsAdmin(false);
+      setIsAnalyst(false);
+      setUserRole(null);
       throw error;
     }
   }, []);
@@ -78,6 +94,8 @@ export const useAuth = (): UseAuthReturn => {
     localStorage.removeItem('authToken');
     setIsAuthenticated(false);
     setIsAdmin(false);
+    setIsAnalyst(false);
+    setUserRole(null);
     // Ensure user is redirected to login immediately from any component
     try {
       window.location.href = '/login';
@@ -89,6 +107,8 @@ export const useAuth = (): UseAuthReturn => {
   return {
     isAuthenticated,
     isAdmin,
+    isAnalyst,
+    userRole,
     login,
     logout,
     isLoading,

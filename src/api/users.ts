@@ -7,7 +7,7 @@ export interface UpdateUserAdminRequest {
   email: string;
   phoneNumber: string;
   password: string;
-  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT';
+  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT' | 'ANALYST';
   isActive: boolean;
 }
 
@@ -17,7 +17,7 @@ export interface CreateUserRequest {
   email: string;
   phoneNumber: string;
   password: string;
-  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT';
+  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT' | 'ANALYST';
   isActive: boolean;
 }
 
@@ -67,7 +67,7 @@ export const usersApi = {
   },
 
   // Admin: Update user role
-  updateUserRole: async (id: number, role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT'): Promise<void> => {
+  updateUserRole: async (id: number, role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT' | 'ANALYST'): Promise<void> => {
     await api.post(`/api/v1/users/${id}/role`, null, {
       params: { role }
     });

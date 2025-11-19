@@ -5,7 +5,7 @@ export interface User {
   lastName: string;
   phoneNumber: string;
   telegramAccount?: string;
-  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT';
+  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT' | 'ANALYST';
   isActive: boolean;
 }
 

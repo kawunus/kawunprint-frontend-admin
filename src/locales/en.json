@@ -287,5 +287,7 @@
   "accessDenied.title": "Access Denied",
   "accessDenied.message": "You don't have permission to access this page :(",
   "accessDenied.description": "Only administrators can access the admin panel.",
-  "accessDenied.backToLogin": "Back to Login"
+  "accessDenied.adminOnly": "This page is only accessible to administrators.",
+  "accessDenied.backToLogin": "Back to Login",
+  "common.backToHome": "Back to Home"
 }

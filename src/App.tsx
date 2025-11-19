@@ -16,7 +16,7 @@ import Users from './pages/Users';
 import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const { isAuthenticated, isAdmin, isAnalyst, isLoading } = useAuth();
   const { i18n, t } = useTranslation();
 
   const toggleLang = () => {
@@ -32,7 +32,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     });
   };
 
-  console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isAdmin, isLoading });
+  console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isAdmin, isAnalyst, isLoading });
 
   if (isLoading) {
     console.log('⏳ ProtectedRoute: loading...');
@@ -48,8 +48,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" />;
   }
 
-  if (!isAdmin) {
-    console.log('🚫 ProtectedRoute: not admin, showing access denied');
+  if (!isAdmin && !isAnalyst) {
+    console.log('🚫 ProtectedRoute: not admin/analyst, showing access denied');
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Language Toggle Button - Fixed Position */}
@@ -97,6 +97,50 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   console.log('✅ ProtectedRoute: authenticated and admin, rendering children');
+  return <>{children}</>;
+}
+
+function AdminOnlyRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const { t } = useTranslation();
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  if (!isAdmin) {
+    console.log('🚫 AdminOnlyRoute: not admin, showing access denied');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full space-y-8 text-center p-8">
+          <div>
+            <h2 className="text-3xl font-extrabold text-red-600 mb-4">
+              {t('accessDenied.title')}
+            </h2>
+            <p className="text-xl text-gray-700 mb-6">
+              {t('accessDenied.adminOnly') || 'This page is only accessible to administrators.'}
+            </p>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {t('common.backToHome') || 'Back to Home'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('✅ AdminOnlyRoute: admin access granted');
   return <>{children}</>;
 }
 
@@ -206,10 +250,10 @@ function App() {
           <Route
             path="/users"
             element={
-              <ProtectedRoute>
+              <AdminOnlyRoute>
                 <Header />
                 <Users />
-              </ProtectedRoute>
+              </AdminOnlyRoute>
             }
           />
           <Route
