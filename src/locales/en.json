@@ -374,6 +374,10 @@
   "import.totalFilaments": "Filaments",
   "import.totalPrinters": "Printers",
   "import.note": "Note",
-  "import.noteText": "Exported data is in human-readable format. Use JSON for programmatic access or spreadsheet formats (CSV/Excel) for office tools."
+  "import.noteText": "Exported data is in human-readable format. Use JSON for programmatic access or spreadsheet formats (CSV/Excel) for office tools.",
+  "import.users": "Users",
+  "import.usersDesc": "Export all users with contact info and roles",
+  "import.usersWhy": "User management, team coordination, access control",
+  "import.totalUsers": "Users"
 }
 

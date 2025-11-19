@@ -4,10 +4,10 @@ import { Button } from '../components/ui/Button';
 import { useOrders } from '../hooks/useOrders';
 import { useFilaments } from '../hooks/useFilaments';
 import { usePrinters } from '../hooks/usePrinters';
-import { useAuth } from '../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { usersApi } from '../api/users';
+import * as XLSX from 'xlsx';
 
-// CSV export utility
+// CSV export utility with proper encoding
 const exportToCSV = (data: any[], filename: string) => {
   if (data.length === 0) {
     alert('No data to export');
@@ -15,19 +15,22 @@ const exportToCSV = (data: any[], filename: string) => {
   }
 
   const headers = Object.keys(data[0]);
-  const csvContent = [
-    headers.join(','),
-    ...data.map(row =>
-      headers.map(header => {
-        const value = row[header];
-        if (value === null || value === undefined) return '';
-        if (typeof value === 'string' && value.includes(',')) return `"${value}"`;
-        return value;
-      }).join(',')
-    ),
-  ].join('\n');
+  const rows = data.map(row =>
+    headers.map(header => {
+      const value = row[header];
+      if (value === null || value === undefined) return '';
+      // Properly escape CSV fields
+      const stringValue = String(value);
+      // Always quote fields to ensure proper parsing
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }).join(',')
+  );
 
-  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const csvContent = [headers.map(h => `"${h}"`).join(','), ...rows].join('\r\n');
+  
+  // Use UTF-8 with BOM for proper encoding in Excel
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -43,8 +46,11 @@ const exportToJSON = (data: any[], filename: string) => {
     return;
   }
 
+  // Use replacer to ensure proper formatting and encoding
   const jsonContent = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonContent], { type: 'application/json' });
+  
+  // Use UTF-8 encoding properly
+  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -53,25 +59,61 @@ const exportToJSON = (data: any[], filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-// Simple XLSX export (using CSV as base, can be opened in Excel)
+// Simple XLSX export (proper Excel format)
 const exportToExcel = (data: any[], filename: string) => {
-  exportToCSV(data, filename.replace('.xlsx', '.csv'));
+  if (data.length === 0) {
+    alert('No data to export');
+    return;
+  }
+
+  try {
+    // Create a new workbook
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    
+    // Auto-fit column widths
+    const colWidths = Object.keys(data[0]).map(key => ({
+      wch: Math.max(key.length, 20)
+    }));
+    ws['!cols'] = colWidths;
+    
+    // Write file
+    XLSX.writeFile(wb, filename);
+  } catch (error) {
+    console.error('Export error:', error);
+    alert('Error exporting file');
+  }
 };
 
 export const Import: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { isAdmin } = useAuth();
   const { orders, orderStatuses } = useOrders();
   const { filaments } = useFilaments();
   const { printers } = usePrinters();
   const [exportStatus, setExportStatus] = useState<string>('');
+  const [users, setUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   const isRu = i18n.language?.startsWith('ru');
 
-  // Access control: only Admin and Employee
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
+  // Load users on mount
+  React.useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const data = await usersApi.getAll();
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
 
   // Prepare export data with friendly format
   const prepareOrdersData = () => {
@@ -109,7 +151,20 @@ export const Import: React.FC = () => {
     }));
   };
 
-  const handleExport = (type: 'orders' | 'filaments' | 'printers', format: 'csv' | 'json' | 'excel') => {
+  const prepareUsersData = () => {
+    return users.map(u => ({
+      'User ID': u.id,
+      'First Name': u.firstName || '-',
+      'Last Name': u.lastName || '-',
+      'Email': u.email,
+      'Phone': u.phoneNumber || '-',
+      'Telegram': u.telegramAccount || '-',
+      'Role': u.role || 'CLIENT',
+      'Active': u.isActive ? 'Yes' : 'No',
+    }));
+  };
+
+  const handleExport = (type: 'orders' | 'filaments' | 'printers' | 'users', format: 'csv' | 'json' | 'excel') => {
     let data: any[] = [];
     let filename = '';
 
@@ -122,6 +177,9 @@ export const Import: React.FC = () => {
     } else if (type === 'printers') {
       data = preparePrintersData();
       filename = `printers_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : format}`;
+    } else if (type === 'users') {
+      data = prepareUsersData();
+      filename = `users_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : format}`;
     }
 
     if (format === 'csv') {
@@ -148,7 +206,7 @@ export const Import: React.FC = () => {
       )}
 
       {/* Export sections */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Orders Export */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center mb-4">
@@ -229,12 +287,39 @@ export const Import: React.FC = () => {
             <strong>Why:</strong> {t('import.printersWhy') || 'Equipment audit, maintenance tracking, capacity planning'}
           </div>
         </div>
+
+        {/* Users Export */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center mb-4">
+            <svg className="w-8 h-8 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+            <h2 className="text-lg font-semibold text-gray-900">{t('import.users') || 'Users'}</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            {t('import.usersDesc') || 'Export all users with contact info and roles'}
+          </p>
+          <div className="space-y-2">
+            <Button variant="primary" size="sm" onClick={() => handleExport('users', 'csv')} className="w-full" disabled={usersLoading}>
+              CSV
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => handleExport('users', 'json')} className="w-full" disabled={usersLoading}>
+              JSON
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => handleExport('users', 'excel')} className="w-full" disabled={usersLoading}>
+              Excel
+            </Button>
+          </div>
+          <div className="mt-4 p-3 bg-indigo-50 rounded text-xs text-indigo-700">
+            <strong>Why:</strong> {t('import.usersWhy') || 'User management, team coordination, access control'}
+          </div>
+        </div>
       </div>
 
       {/* Data summary */}
       <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('import.summary') || 'Data Summary'}</h3>
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
             <div className="text-3xl font-bold text-blue-600">{orders.length}</div>
             <div className="text-sm text-gray-600">{t('import.totalOrders') || 'Total Orders'}</div>
@@ -246,6 +331,10 @@ export const Import: React.FC = () => {
           <div>
             <div className="text-3xl font-bold text-purple-600">{printers.length}</div>
             <div className="text-sm text-gray-600">{t('import.totalPrinters') || 'Printers'}</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-indigo-600">{users.length}</div>
+            <div className="text-sm text-gray-600">{t('import.totalUsers') || 'Users'}</div>
           </div>
         </div>
       </div>
