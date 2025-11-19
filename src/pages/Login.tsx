@@ -14,11 +14,19 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const toggleLang = () => {
-    const next = i18n.language === 'ru' ? 'en' : 'ru';
-    i18n.changeLanguage(next);
+    console.log('🔥 toggleLang called!');
+    const currentLang = i18n.language || 'ru';
+    console.log('🔥 Current language:', currentLang);
+    const next = currentLang.startsWith('ru') ? 'en' : 'ru';
+    console.log('🔥 Switching to:', next);
+    i18n.changeLanguage(next).then(() => {
+      console.log('🔥 Language changed successfully to:', i18n.language);
+    }).catch((err) => {
+      console.error('🔥 Error changing language:', err);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,10 +63,16 @@ export const Login: React.FC = () => {
       {/* Language Toggle Button - Fixed Position */}
       <div className="fixed top-6 right-6 z-10">
         <button
-          onClick={toggleLang}
+          onClick={(e) => {
+            console.log('🔥 Button clicked!', e);
+            e.preventDefault();
+            e.stopPropagation();
+            toggleLang();
+          }}
+          type="button"
           className="px-4 py-2 bg-gray-100 text-gray-800 hover:bg-blue-600 hover:text-white border border-gray-200 hover:border-blue-600 rounded-md transition-colors text-sm font-medium shadow-md"
         >
-          {i18n.language?.toUpperCase?.() || 'RU'}
+          {(i18n.language || 'ru').startsWith('ru') ? 'RU' : 'EN'}
         </button>
       </div>
       
@@ -66,10 +80,10 @@ export const Login: React.FC = () => {
         <div className="max-w-md w-full space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              3D Print Studio Admin
+              {t('login.title')}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Sign in to your administrator account
+              {t('login.subtitle')}
             </p>
           </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -79,21 +93,21 @@ export const Login: React.FC = () => {
             </div>
           )}
           <Input
-            label="Email address"
+            label={t('login.email')}
             type="email"
             value={email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             required
-            placeholder="admin@example.com"
+            placeholder={t('login.emailPlaceholder')}
             autoComplete="off"
           />
           <Input
-            label="Password"
+            label={t('login.password')}
             type="password"
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             required
-            placeholder="password"
+            placeholder={t('login.passwordPlaceholder')}
             autoComplete="new-password"
           />
 
@@ -103,7 +117,7 @@ export const Login: React.FC = () => {
               loading={loading}
               className="w-full"
             >
-              Sign in
+              {t('login.signIn')}
             </Button>
           </div>
         </form>

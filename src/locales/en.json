@@ -205,5 +205,16 @@
   "home.gags.1": "Printers warmed up, caffeine loaded.",
   "home.gags.2": "Filament dreams and perfect layers.",
   "home.gags.3": "One layer at a time.",
-  "home.gags.4": "Keep calm and print on."
+  "home.gags.4": "Keep calm and print on.",
+  "login.title": "3D Print Studio Admin",
+  "login.subtitle": "Sign in to your administrator account",
+  "login.email": "Email address",
+  "login.password": "Password",
+  "login.signIn": "Sign in",
+  "login.emailPlaceholder": "admin@example.com",
+  "login.passwordPlaceholder": "password",
+  "accessDenied.title": "Access Denied",
+  "accessDenied.message": "You don't have permission to access this page :(",
+  "accessDenied.description": "Only administrators can access the admin panel.",
+  "accessDenied.backToLogin": "Back to Login"
 }

@@ -204,5 +204,16 @@
   "home.gags.1": "Принтеры разогреты, кофе заряжен.",
   "home.gags.2": "Мечты о филаменте и идеальных слоях.",
   "home.gags.3": "По одному слою за раз.",
-  "home.gags.4": "Сохраняй спокойствие и печатай."
+  "home.gags.4": "Сохраняй спокойствие и печатай.",
+  "login.title": "3D Print Studio Admin",
+  "login.subtitle": "Войдите в свою учетную запись администратора",
+  "login.email": "Email адрес",
+  "login.password": "Пароль",
+  "login.signIn": "Войти",
+  "login.emailPlaceholder": "admin@example.com",
+  "login.passwordPlaceholder": "пароль",
+  "accessDenied.title": "Доступ запрещен",
+  "accessDenied.message": "У вас нет прав для доступа к этой странице :(",
+  "accessDenied.description": "Только администраторы могут получить доступ к панели управления.",
+  "accessDenied.backToLogin": "Вернуться к входу"
 }

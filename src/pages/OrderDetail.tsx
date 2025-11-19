@@ -21,11 +21,9 @@ export const OrderDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Status change modal states
   const [changingStatus, setChangingStatus] = useState<{ currentStatusId: number; newStatusId: number } | null>(null);
   const [statusChangeComment, setStatusChangeComment] = useState<string>('');
   
-  // Filament consumption modal state (for status 12)
   const [consumingFilament, setConsumingFilament] = useState<boolean>(false);
   const [selectedFilamentId, setSelectedFilamentId] = useState<number | ''>('');
   const [gramsUsed, setGramsUsed] = useState<string>('');
@@ -33,11 +31,9 @@ export const OrderDetail: React.FC = () => {
   const [filamentError, setFilamentError] = useState<string>('');
   const [filamentSearch, setFilamentSearch] = useState<string>('');
   
-  // Additional info modal state (for status 10)
   const [requestingInfo, setRequestingInfo] = useState<boolean>(false);
   const [infoComment, setInfoComment] = useState<string>('');
   
-  // Design price modal state (for status 13)
   const [addingDesignPrice, setAddingDesignPrice] = useState<boolean>(false);
   const [designPrice, setDesignPrice] = useState<string>('');
   const [designComment, setDesignComment] = useState<string>('');

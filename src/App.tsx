@@ -16,11 +16,19 @@ import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const toggleLang = () => {
-    const next = i18n.language === 'ru' ? 'en' : 'ru';
-    i18n.changeLanguage(next);
+    console.log('🔥 toggleLang called in App!');
+    const currentLang = i18n.language || 'ru';
+    console.log('🔥 Current language:', currentLang);
+    const next = currentLang.startsWith('ru') ? 'en' : 'ru';
+    console.log('🔥 Switching to:', next);
+    i18n.changeLanguage(next).then(() => {
+      console.log('🔥 Language changed successfully to:', i18n.language);
+    }).catch((err) => {
+      console.error('🔥 Error changing language:', err);
+    });
   };
 
   console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isAdmin, isLoading });
@@ -46,10 +54,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
         {/* Language Toggle Button - Fixed Position */}
         <div className="fixed top-6 right-6 z-10">
           <button
-            onClick={toggleLang}
+            onClick={(e) => {
+              console.log('🔥 Button clicked in App!', e);
+              e.preventDefault();
+              e.stopPropagation();
+              toggleLang();
+            }}
+            type="button"
             className="px-4 py-2 bg-gray-100 text-gray-800 hover:bg-blue-600 hover:text-white border border-gray-200 hover:border-blue-600 rounded-md transition-colors text-sm font-medium shadow-md"
           >
-            {i18n.language?.toUpperCase?.() || 'RU'}
+            {(i18n.language || 'ru').startsWith('ru') ? 'RU' : 'EN'}
           </button>
         </div>
         
@@ -57,13 +71,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
           <div className="max-w-md w-full space-y-8 text-center p-8">
             <div>
               <h2 className="text-3xl font-extrabold text-red-600 mb-4">
-                Доступ запрещен
+                {t('accessDenied.title')}
               </h2>
               <p className="text-xl text-gray-700 mb-6">
-                У вас нет прав для доступа к этой странице :(
+                {t('accessDenied.message')}
               </p>
               <p className="text-sm text-gray-500 mb-8">
-                Только администраторы могут получить доступ к панели управления.
+                {t('accessDenied.description')}
               </p>
               <button
                 onClick={() => {
@@ -72,7 +86,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
                 }}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                Вернуться к входу
+                {t('accessDenied.backToLogin')}
               </button>
             </div>
           </div>
