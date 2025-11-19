@@ -14,9 +14,9 @@ import Profile from './pages/Profile';
 import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
 
-  console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isLoading });
+  console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isAdmin, isLoading });
 
   if (isLoading) {
     console.log('⏳ ProtectedRoute: loading...');
@@ -32,7 +32,37 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" />;
   }
 
-  console.log('✅ ProtectedRoute: authenticated, rendering children');
+  if (!isAdmin) {
+    console.log('🚫 ProtectedRoute: not admin, showing access denied');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full space-y-8 text-center p-8">
+          <div>
+            <h2 className="text-3xl font-extrabold text-red-600 mb-4">
+              Доступ запрещен
+            </h2>
+            <p className="text-xl text-gray-700 mb-6">
+              У вас нет прав для доступа к этой странице :(
+            </p>
+            <p className="text-sm text-gray-500 mb-8">
+              Только администраторы могут получить доступ к панели управления.
+            </p>
+            <button
+              onClick={() => {
+                localStorage.removeItem('authToken');
+                window.location.href = '/login';
+              }}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Вернуться к входу
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('✅ ProtectedRoute: authenticated and admin, rendering children');
   return <>{children}</>;
 }
 
