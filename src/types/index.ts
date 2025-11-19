@@ -9,6 +9,15 @@ export interface User {
   isActive: boolean;
 }
 
+export interface UpdateProfileRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  currentPassword: string;
+  newPassword?: string;
+}
+
 export interface Order {
   id: number;
   customer: User;
