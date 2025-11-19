@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrders } from '../hooks/useOrders';
 import { useFilaments } from '../hooks/useFilaments';
 import { usePrinters } from '../hooks/usePrinters';
+import { useAuth } from '../hooks/useAuth';
 import { getUserInfoFromToken } from '../utils/jwt';
 
 // user name extraction moved to utils/jwt
@@ -19,6 +20,7 @@ function getGreetingKey(hours: number): string {
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { isAdmin } = useAuth();
   const { orders, orderStatuses, loading: ordersLoading } = useOrders();
   const { filaments, types, loading: filamentsLoading } = useFilaments();
   const { printers, loading: printersLoading } = usePrinters();
@@ -111,7 +113,7 @@ export const Home: React.FC = () => {
         {/* Quick counts (moved after Date/Time) */}
         <div className="rounded-2xl bg-white shadow-lg border border-gray-200 p-6">
           <div className="text-gray-500 text-sm mb-3">{t('home.widgets.overview') || 'Overview'}</div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${isAdmin ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2'} gap-4`}>
             <div className="rounded-xl bg-gray-50 p-4">
               <div className="text-xs text-gray-500">{t('orders.title') || 'Orders'}</div>
               <div className="text-2xl font-bold">{isLoading ? '…' : counts.orders}</div>
@@ -132,6 +134,13 @@ export const Home: React.FC = () => {
               <div className="text-2xl font-bold">{isLoading ? '…' : counts.types}</div>
               <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/filament-types')}>{t('common.details') || 'Details'}</Button>
             </div>
+            {isAdmin && (
+              <div className="rounded-xl bg-gray-50 p-4">
+                <div className="text-xs text-gray-500">{t('users.title') || 'Users'}</div>
+                <div className="text-2xl font-bold">{isLoading ? '…' : orders.length > 0 ? '👥' : '0'}</div>
+                <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/users')}>{t('common.details') || 'Details'}</Button>
+              </div>
+            )}
           </div>
         </div>
 

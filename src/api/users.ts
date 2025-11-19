@@ -1,6 +1,16 @@
 import { api } from './index';
 import { User, UpdateProfileRequest } from '../types';
 
+export interface UpdateUserAdminRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT';
+  isActive: boolean;
+}
+
 export const usersApi = {
   getAll: async (): Promise<User[]> => {
     const res = await api.get<User[]>('/api/v1/users');
@@ -27,5 +37,23 @@ export const usersApi = {
   // Delete current user account
   deleteMe: async (): Promise<void> => {
     await api.delete('/api/v1/users/me');
+  },
+
+  // Admin: Update user by ID
+  updateUser: async (id: number, data: UpdateUserAdminRequest): Promise<User> => {
+    const response = await api.post<User>(`/api/v1/users/${id}`, data);
+    return response.data;
+  },
+
+  // Admin: Delete user by ID
+  deleteUser: async (id: number): Promise<void> => {
+    await api.delete(`/api/v1/users/${id}`);
+  },
+
+  // Admin: Update user role
+  updateUserRole: async (id: number, role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT'): Promise<void> => {
+    await api.post(`/api/v1/users/${id}/role`, null, {
+      params: { role }
+    });
   },
 };

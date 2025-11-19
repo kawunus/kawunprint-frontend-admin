@@ -12,6 +12,7 @@ import FilamentTypes from './pages/FilamentTypes';
 import Printers from './pages/Printers';
 import PrinterDetail from './pages/PrinterDetail';
 import Profile from './pages/Profile';
+import Users from './pages/Users';
 import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -199,6 +200,15 @@ function App() {
               <ProtectedRoute>
                 <Header />
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <Header />
+                <Users />
               </ProtectedRoute>
             }
           />
