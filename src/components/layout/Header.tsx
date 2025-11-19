@@ -27,6 +27,9 @@ export const Header: React.FC = () => {
             <Button onClick={toggleLang} variant="secondary" size="sm" className="bg-gray-100 text-gray-800 hover:bg-blue-600 hover:text-white border border-gray-200 hover:border-blue-600 focus:ring-blue-500">
               {i18n.language?.toUpperCase?.() || 'RU'}
             </Button>
+            <Button onClick={() => navigate('/')} variant="secondary" size="sm" className="transform transition-transform duration-150 hover:scale-105">
+              {t('home.title') || 'Home'}
+            </Button>
             <Button onClick={() => navigate('/profile')} variant="primary" size="sm" className="transform transition-transform duration-150 hover:scale-105">
               {t('common.profile') || t('profile.title') || 'Profile'}
             </Button>
