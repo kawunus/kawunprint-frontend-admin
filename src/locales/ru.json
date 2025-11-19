@@ -262,6 +262,8 @@
   "users.loadError": "Не удалось загрузить пользователей",
   "users.saveError": "Не удалось сохранить пользователя",
   "users.deleteError": "Не удалось удалить пользователя",
+  "users.employees": "Сотрудники",
+  "home.facts.employees": "Сотрудников",
   "filters.hide": "Скрыть",
   "filters.show": "Показать",
   "home.gags.0": "Сделаем сегодня что‑нибудь классное.",

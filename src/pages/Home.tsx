@@ -6,6 +6,8 @@ import { useOrders } from '../hooks/useOrders';
 import { useFilaments } from '../hooks/useFilaments';
 import { usePrinters } from '../hooks/usePrinters';
 import { useAuth } from '../hooks/useAuth';
+import { usersApi } from '../api/users';
+import { User } from '../types';
 import { getUserInfoFromToken } from '../utils/jwt';
 
 // user name extraction moved to utils/jwt
@@ -26,6 +28,8 @@ export const Home: React.FC = () => {
   const { printers, loading: printersLoading } = usePrinters();
 
   const [now, setNow] = useState<Date>(new Date());
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   const user = getUserInfoFromToken();
 
@@ -34,6 +38,25 @@ export const Home: React.FC = () => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Load users if admin
+  useEffect(() => {
+    if (isAdmin) {
+      loadUsers();
+    }
+  }, [isAdmin]);
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const data = await usersApi.getAll();
+      setUsers(data);
+    } catch (err) {
+      console.error('Failed to load users:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
 
   // Geolocation and reverse geocoding removed per request
 
@@ -65,11 +88,17 @@ export const Home: React.FC = () => {
     }).length;
   }, [orders, orderStatuses]);
 
+  // Calculate employees count (users with role != CLIENT)
+  const employeesCount = useMemo(() => {
+    return users.filter(u => u.role !== 'CLIENT').length;
+  }, [users]);
+
   const counts = {
     orders: activeOrdersCount, // NEW + IN PROGRESS only
     filaments: filaments.length,
     printers: printers.length,
     types: types.length,
+    employees: employeesCount, // Employees only (not clients)
   };
 
   const facts = useMemo(() => {
@@ -86,12 +115,15 @@ export const Home: React.FC = () => {
       return statusName === 'завершён' || statusName === 'завершено';
     }).length;
     
+    // Employees count (not clients)
+    const employees = users.filter(u => u.role !== 'CLIENT').length;
+    
     const avgPrice = filaments.length ? filaments.reduce((s, f) => s + (Number(f.pricePerGram) || 0), 0) / filaments.length : 0;
     
-    return { totalKg, activePrinters, totalOrders, completedOrders, avgPrice };
-  }, [filaments, printers, orders, orderStatuses]);
+    return { totalKg, activePrinters, totalOrders, completedOrders, employees, avgPrice };
+  }, [filaments, printers, orders, orderStatuses, users]);
 
-  const isLoading = ordersLoading || filamentsLoading || printersLoading;
+  const isLoading = ordersLoading || filamentsLoading || printersLoading || usersLoading;
 
   return (
     <div className="p-6">
@@ -136,8 +168,8 @@ export const Home: React.FC = () => {
             </div>
             {isAdmin && (
               <div className="rounded-xl bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">{t('users.title') || 'Users'}</div>
-                <div className="text-2xl font-bold">{isLoading ? '…' : orders.length > 0 ? '👥' : '0'}</div>
+                <div className="text-xs text-gray-500">{t('users.employees') || 'Employees'}</div>
+                <div className="text-2xl font-bold">{isLoading ? '…' : counts.employees}</div>
                 <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/users')}>{t('common.details') || 'Details'}</Button>
               </div>
             )}
@@ -164,6 +196,12 @@ export const Home: React.FC = () => {
               <div className="text-xs text-gray-500">{t('home.facts.completedOrders') || 'Completed orders'}</div>
               <div className="text-2xl font-bold">{isLoading ? '…' : facts.completedOrders}</div>
             </div>
+            {isAdmin && (
+              <div className="rounded-xl bg-white/70 backdrop-blur p-4 border border-white/50">
+                <div className="text-xs text-gray-500">{t('home.facts.employees') || 'Employees'}</div>
+                <div className="text-2xl font-bold">{isLoading ? '…' : facts.employees}</div>
+              </div>
+            )}
           </div>
         </div>
       </div>

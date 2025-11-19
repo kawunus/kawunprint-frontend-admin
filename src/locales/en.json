@@ -263,6 +263,8 @@
   "users.loadError": "Failed to load users",
   "users.saveError": "Failed to save user",
   "users.deleteError": "Failed to delete user",
+  "users.employees": "Employees",
+  "home.facts.employees": "Employees",
   "filters.hide": "Hide",
   "filters.show": "Show",
   "home.gags.0": "Let's make something awesome today.",
