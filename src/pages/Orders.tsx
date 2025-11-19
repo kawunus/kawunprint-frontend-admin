@@ -10,11 +10,13 @@ import { ordersApi } from '../api/orders';
 import { getUserIdFromToken } from '../utils/jwt';
 import { usersApi } from '../api/users';
 import { User } from '../types';
+import { useAuth } from '../hooks/useAuth';
 
 export const Orders: React.FC = () => {
   const { orders, orderStatuses, loading, error, refreshOrders } = useOrders();
   const { filaments } = useFilaments();
   const { t, i18n } = useTranslation();
+  const { isAdmin } = useAuth();
   const isRu = i18n.language?.startsWith('ru');
   
   // Users list for customer selection
@@ -501,16 +503,18 @@ export const Orders: React.FC = () => {
             }
             setShowFilters(s => !s);
           }} variant="secondary">{t('filters.open') || 'Filters'}</Button>
-          <Button variant="primary" size="sm" onClick={() => {
-            setEditingOrder({ totalPrice: 0, statusId: 6 });
-            setIsCreating(true);
-          }}>
-            <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-              <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {t('orders.new') || 'New order'}
-          </Button>
+          {isAdmin && (
+            <Button variant="primary" size="sm" onClick={() => {
+              setEditingOrder({ totalPrice: 0, statusId: 6 });
+              setIsCreating(true);
+            }}>
+              <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {t('orders.new') || 'New order'}
+            </Button>
+          )}
           {hasActiveFilters ? (
             <Button variant="secondary" size="sm" onClick={clearAllFilters}>{t('filters.clear') || 'Clear'}</Button>
           ) : null}
@@ -601,19 +605,23 @@ export const Orders: React.FC = () => {
                     </select>
                     <div className="flex items-center space-x-2">
                       <Button size="sm" variant="secondary" onClick={() => window.location.assign(`/orders/${order.id}`)}>{t('common.details') || 'Details'}</Button>
-                      <Button size="sm" variant="secondary" onClick={() => { 
-                        const orderData = {
-                          id: order.id,
-                          customerId: order.customer.id,
-                          statusId: order.statusId, 
-                          totalPrice: order.totalPrice, 
-                          comment: order.comment 
-                        };
-                        setEditingOrder(orderData); 
-                        setOriginalOrder(orderData);
-                        setIsCreating(false); 
-                      }}>{t('common.edit') || 'Edit'}</Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteId(order.id)}>{t('common.delete') || 'Delete'}</Button>
+                      {isAdmin && (
+                        <>
+                          <Button size="sm" variant="secondary" onClick={() => { 
+                            const orderData = {
+                              id: order.id,
+                              customerId: order.customer.id,
+                              statusId: order.statusId, 
+                              totalPrice: order.totalPrice, 
+                              comment: order.comment 
+                            };
+                            setEditingOrder(orderData); 
+                            setOriginalOrder(orderData);
+                            setIsCreating(false); 
+                          }}>{t('common.edit') || 'Edit'}</Button>
+                          <Button size="sm" variant="danger" onClick={() => setDeleteId(order.id)}>{t('common.delete') || 'Delete'}</Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

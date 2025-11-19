@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useFilaments } from '../hooks/useFilaments';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input'; 
+import { Input } from '../components/ui/Input';
+import { useAuth } from '../hooks/useAuth';
 
 const FilamentTypes: React.FC = () => {
   const { types, createType, deleteType, fetchAll, updateType } = useFilaments();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [showNewType, setShowNewType] = useState(false);
   const [typeName, setTypeName] = useState('');
   const [typeDescription, setTypeDescription] = useState('');
@@ -63,18 +65,20 @@ const FilamentTypes: React.FC = () => {
                 })()}
               </Button>
 
-              <Button
-                variant="primary"
-                size="sm"
-                className="h-9"
-                onClick={() => setShowNewType(true)}
-              >
-                <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                  <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {t('filaments.newType')}
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="h-9"
+                  onClick={() => setShowNewType(true)}
+                >
+                  <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {t('filaments.newType')}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -259,30 +263,32 @@ const FilamentTypes: React.FC = () => {
                   </div>
                 </div>
                 <div className="inline-flex flex-col items-stretch space-y-2 flex-shrink-0 ml-4">
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setEditing(tp.id);
-                        setEditName(tp.name);
-                        setEditDescription(tp.description || '');
-                        setEditError('');
-                      }}
-                    >
-                      {t('common.edit') || 'Edit'}
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => {
-                        setConfirmDeleteId(tp.id);
-                        setConfirmDeleteName(tp.name);
-                      }}
-                    >
-                      {t('common.delete')}
-                    </Button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setEditing(tp.id);
+                          setEditName(tp.name);
+                          setEditDescription(tp.description || '');
+                          setEditError('');
+                        }}
+                      >
+                        {t('common.edit') || 'Edit'}
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => {
+                          setConfirmDeleteId(tp.id);
+                          setConfirmDeleteName(tp.name);
+                        }}
+                      >
+                        {t('common.delete')}
+                      </Button>
+                    </div>
+                  )}
                   <Button
                     variant="primary"
                     size="sm"

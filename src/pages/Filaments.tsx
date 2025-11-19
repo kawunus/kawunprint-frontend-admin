@@ -4,11 +4,13 @@ import { useFilaments } from '../hooks/useFilaments';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Filament, FilamentType } from '../types';
+import { useAuth } from '../hooks/useAuth';
 
 export const Filaments: React.FC = () => {
   const { filaments: allFilaments, types, loading, error, create, update, remove } = useFilaments();
   const { t, i18n } = useTranslation();
   const isRu = i18n.language?.startsWith('ru');
+  const { isAdmin } = useAuth();
 
   // Filters toolbar state (search + applied filters)
   const [searchColor, setSearchColor] = useState('');
@@ -233,17 +235,19 @@ export const Filaments: React.FC = () => {
             }
             setShowFilters(s => !s);
           }} variant="secondary">{t('filaments.filters') || 'Filters'}</Button>
-          <Button variant="primary" size="sm" onClick={() => {
-            const defaultType: FilamentType | undefined = types[0];
-            setEditingFilament({ id: 0, color: '', type: (defaultType as any) as FilamentType, pricePerGram: 0, residue: 0, hexColor: '#FFFFFF' });
-            setIsCreating(true);
-          }}>
-            <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-              <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {t('filaments.newFilament') || 'Add Filament'}
-          </Button>
+          {isAdmin && (
+            <Button variant="primary" size="sm" onClick={() => {
+              const defaultType: FilamentType | undefined = types[0];
+              setEditingFilament({ id: 0, color: '', type: (defaultType as any) as FilamentType, pricePerGram: 0, residue: 0, hexColor: '#FFFFFF' });
+              setIsCreating(true);
+            }}>
+              <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {t('filaments.newFilament') || 'Add Filament'}
+            </Button>
+          )}
           {(searchColor || appliedMinPrice || appliedMaxPrice || appliedMinResidue || appliedMaxResidue || appliedTypeId !== '') ? (
             <Button variant="secondary" size="sm" onClick={() => {
               setSearchColor('');
@@ -339,10 +343,12 @@ export const Filaments: React.FC = () => {
                   <div className="text-right">
                     <div className="text-sm text-gray-600">{(f.pricePerGram ?? 0).toFixed(2)} BYN/g</div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button size="sm" variant="secondary" onClick={() => { setEditingFilament(f); setIsCreating(false); }}>{t('common.edit') || 'Edit'}</Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteId(f.id)}>{t('common.delete') || 'Delete'}</Button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex items-center space-x-2">
+                      <Button size="sm" variant="secondary" onClick={() => { setEditingFilament(f); setIsCreating(false); }}>{t('common.edit') || 'Edit'}</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(f.id)}>{t('common.delete') || 'Delete'}</Button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

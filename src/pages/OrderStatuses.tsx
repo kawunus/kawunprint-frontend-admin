@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ordersApi } from '../api/orders';
 import { OrderStatus } from '../types';
 import { Button } from '../components/ui/Button';
+import { useAuth } from '../hooks/useAuth';
 
 export const OrderStatuses: React.FC = () => {
   const [statuses, setStatuses] = useState<OrderStatus[]>([]);
@@ -10,6 +11,7 @@ export const OrderStatuses: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingStatus, setEditingStatus] = useState<OrderStatus | null>(null);
   const [description, setDescription] = useState('');
+  const { isAdmin } = useAuth();
 
   const fetchStatuses = async () => {
     try {
@@ -81,9 +83,11 @@ export const OrderStatuses: React.FC = () => {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Статусы заказов</h1>
-        <Button onClick={() => openModal()} variant="primary">
-          Добавить статус
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => openModal()} variant="primary">
+            Добавить статус
+          </Button>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow">
@@ -101,9 +105,11 @@ export const OrderStatuses: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Описание
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Действия
-                </th>
+                {isAdmin && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Действия
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -115,22 +121,24 @@ export const OrderStatuses: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {status.description}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <Button
-                      onClick={() => openModal(status)}
-                      variant="secondary"
-                      size="sm"
-                    >
-                      Изменить
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(status.id)}
-                      variant="danger"
-                      size="sm"
-                    >
-                      Удалить
-                    </Button>
-                  </td>
+                  {isAdmin && (
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <Button
+                        onClick={() => openModal(status)}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Изменить
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(status.id)}
+                        variant="danger"
+                        size="sm"
+                      >
+                        Удалить
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

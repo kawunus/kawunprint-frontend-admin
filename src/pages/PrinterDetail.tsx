@@ -7,14 +7,15 @@ import { useTranslation } from 'react-i18next';
 import { Printer } from '../types';
 import { usePrinterHistory } from '../hooks/usePrinterHistory';
 import { formatLocalDateTime, parseDbDate } from '../utils/datetime';
-import { getUserInfoFromToken } from '../utils/jwt';
 import { printerHistoryApi } from '../api/printerHistory';
+import { useAuth } from '../hooks/useAuth';
 
 const PrinterDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { getById, update, setActive, remove } = usePrinters();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [printer, setPrinter] = useState<Printer | null>(null);
   const [loading, setLoading] = useState(true);
   const [edit, setEdit] = useState<Printer | null>(null);
@@ -34,8 +35,6 @@ const PrinterDetail: React.FC = () => {
   const [appliedSortOrder, setAppliedSortOrder] = useState<'asc' | 'desc'>('desc');
   const printerId = Number(id);
   const { items: history, loading: historyLoading, error: historyError, refresh: refreshHistory } = usePrinterHistory(Number.isFinite(printerId) ? printerId : undefined);
-  const userInfo = getUserInfoFromToken();
-  const isAdmin = (userInfo?.role || '').toUpperCase() === 'ADMIN';
 
   // Build list of unique users from history for dropdown
   const userOptions = React.useMemo(() => {
@@ -146,10 +145,12 @@ const PrinterDetail: React.FC = () => {
           <Button variant="secondary" onClick={handleBack}>{t('common.back') || 'Back'}</Button>
           <h1 className="text-2xl font-bold">{printer.name}</h1>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="secondary" onClick={() => setEdit(printer)}>{t('common.edit') || 'Edit'}</Button>
-          <Button variant="danger" onClick={() => setConfirmDelete(true)}>{t('common.delete') || 'Delete'}</Button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center space-x-2">
+            <Button variant="secondary" onClick={() => setEdit(printer)}>{t('common.edit') || 'Edit'}</Button>
+            <Button variant="danger" onClick={() => setConfirmDelete(true)}>{t('common.delete') || 'Delete'}</Button>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">

@@ -9,12 +9,14 @@ import { formatLocalDateTime } from '../utils/datetime';
 import { useTranslation } from 'react-i18next';
 import { useFilaments } from '../hooks/useFilaments';
 import { getUserIdFromToken } from '../utils/jwt';
+import { useAuth } from '../hooks/useAuth';
 
 export const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { filaments } = useFilaments();
+  const { isAdmin } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [history, setHistory] = useState<OrderHistory[]>([]);
   const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([]);
@@ -359,14 +361,16 @@ export const OrderDetail: React.FC = () => {
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{t('orders.title') || 'Orders'} #{order.id}</h1>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={handleEdit} variant="secondary">
-            {t('common.edit') || 'Edit'}
-          </Button>
-          <Button onClick={() => setShowDeleteModal(true)} variant="danger">
-            {t('common.delete') || 'Delete'}
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center space-x-2">
+            <Button onClick={handleEdit} variant="secondary">
+              {t('common.edit') || 'Edit'}
+            </Button>
+            <Button onClick={() => setShowDeleteModal(true)} variant="danger">
+              {t('common.delete') || 'Delete'}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -424,25 +428,27 @@ export const OrderDetail: React.FC = () => {
           )}
 
           {/* Status Change Dropdown */}
-          <div className="mt-6 pt-6 border-t">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">{t('orders.status') || 'Status'}</h3>
-            <select
-              value={order.statusId || ''}
-              onChange={(e) => {
-                const newStatusId = Number(e.target.value);
-                if (order.statusId != null && newStatusId !== order.statusId) {
-                  handleStatusChange(order.statusId, newStatusId);
-                }
-              }}
-              className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={!orderStatuses.length}
-            >
-              <option value="" disabled>{statusNameById(order.statusId) || 'Select status'}</option>
-              {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
-                <option key={status.id} value={status.id}>{status.description}</option>
-              ))}
-            </select>
-          </div>
+          {isAdmin && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">{t('orders.status') || 'Status'}</h3>
+              <select
+                value={order.statusId || ''}
+                onChange={(e) => {
+                  const newStatusId = Number(e.target.value);
+                  if (order.statusId != null && newStatusId !== order.statusId) {
+                    handleStatusChange(order.statusId, newStatusId);
+                  }
+                }}
+                className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!orderStatuses.length}
+              >
+                <option value="" disabled>{statusNameById(order.statusId) || 'Select status'}</option>
+                {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
+                  <option key={status.id} value={status.id}>{status.description}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">

@@ -5,12 +5,14 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Printer } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Printers: React.FC = () => {
   const { printers, loading, error, create, update, remove, setActive } = usePrinters();
   const { t, i18n } = useTranslation();
   const isRu = i18n.language?.startsWith('ru');
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'active' | 'multicolor'>('name');
@@ -144,16 +146,18 @@ const Printers: React.FC = () => {
             }
             setShowFilters(s => !s);
           }} variant="secondary">{t('printers.filters') || 'Filters'}</Button>
-          <Button variant="primary" size="sm" onClick={() => {
-            setEditing({ id: 0, name: '', isMulticolor: false, isActive: false, description: '' });
-            setIsCreating(true);
-          }}>
-            <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-              <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {t('printers.new') || 'Add Printer'}
-          </Button>
+          {isAdmin && (
+            <Button variant="primary" size="sm" onClick={() => {
+              setEditing({ id: 0, name: '', isMulticolor: false, isActive: false, description: '' });
+              setIsCreating(true);
+            }}>
+              <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {t('printers.new') || 'Add Printer'}
+            </Button>
+          )}
           {(search || activeFilter !== 'all' || multiFilter !== 'all') ? (
             <Button variant="secondary" size="sm" onClick={() => {
               setSearch('');
@@ -215,15 +219,19 @@ const Printers: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-3">
                   {/* Active switch */}
-                  <button onClick={() => toggleActive(p)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${p.isActive ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${p.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
+                  {isAdmin && (
+                    <button onClick={() => toggleActive(p)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${p.isActive ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${p.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  )}
                   {/* Actions: Edit/Delete on top row, Details below spanning exactly their combined width */}
                   <div className="flex flex-col items-stretch gap-2">
-                    <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="secondary" onClick={() => { setEditing(p); setIsCreating(false); }}>{t('common.edit') || 'Edit'}</Button>
-                      <Button size="sm" variant="danger" onClick={() => setDeleteId(p.id)}>{t('common.delete') || 'Delete'}</Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center space-x-2">
+                        <Button size="sm" variant="secondary" onClick={() => { setEditing(p); setIsCreating(false); }}>{t('common.edit') || 'Edit'}</Button>
+                        <Button size="sm" variant="danger" onClick={() => setDeleteId(p.id)}>{t('common.delete') || 'Delete'}</Button>
+                      </div>
+                    )}
                     <Button size="sm" variant="primary" className="w-full justify-center" onClick={() => navigate(`/printers/${p.id}`)}>{t('printers.details') || 'Details'}</Button>
                   </div>
                 </div>

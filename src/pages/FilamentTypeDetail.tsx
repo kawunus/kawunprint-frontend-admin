@@ -5,12 +5,14 @@ import { useFilaments } from '../hooks/useFilaments';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../hooks/useAuth';
 
 const FilamentTypeDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isRu = i18n.language?.startsWith('ru');
+  const { isAdmin } = useAuth();
 
   const { 
     types, 
@@ -294,15 +296,17 @@ const FilamentTypeDetail: React.FC = () => {
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">{type.name}</h1>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="secondary" onClick={() => {
-            setTypeNameEdit(type.name);
-            setTypeDescriptionEdit(type.description || '');
-            setTypeEditError('');
-            setEditingType(true);
-          }}>{t('common.edit') || 'Edit'}</Button>
-          <Button variant="danger" onClick={() => setConfirmDeleteType(true)}>{t('common.delete') || 'Delete'}</Button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center space-x-2">
+            <Button variant="secondary" onClick={() => {
+              setTypeNameEdit(type.name);
+              setTypeDescriptionEdit(type.description || '');
+              setTypeEditError('');
+              setEditingType(true);
+            }}>{t('common.edit') || 'Edit'}</Button>
+            <Button variant="danger" onClick={() => setConfirmDeleteType(true)}>{t('common.delete') || 'Delete'}</Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -350,16 +354,18 @@ const FilamentTypeDetail: React.FC = () => {
                 }
                 setShowFilters(s => !s);
               }} variant="secondary">{t('filaments.filters') || 'Filters'}</Button>
-              <Button variant="primary" size="sm" onClick={() => {
-                setEditingFilament({ id: 0, color: '', type: type as FilamentType, pricePerGram: 0, residue: 0, hexColor: '#FFFFFF' });
-                setIsCreating(true);
-              }}>
-                <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                  <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {t('filaments.newFilament') || 'Add Filament'}
-              </Button>
+              {isAdmin && (
+                <Button variant="primary" size="sm" onClick={() => {
+                  setEditingFilament({ id: 0, color: '', type: type as FilamentType, pricePerGram: 0, residue: 0, hexColor: '#FFFFFF' });
+                  setIsCreating(true);
+                }}>
+                  <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {t('filaments.newFilament') || 'Add Filament'}
+                </Button>
+              )}
               {(searchColor || appliedMinPrice || appliedMaxPrice || appliedMinResidue || appliedMaxResidue) ? (
                 <Button variant="secondary" size="sm" onClick={() => { setSearchColor(''); setAppliedMinPrice(''); setAppliedMaxPrice(''); setAppliedMinResidue(''); setAppliedMaxResidue(''); }}>{t('filters.clear') || 'Clear'}</Button>
               ) : null}
@@ -503,10 +509,12 @@ const FilamentTypeDetail: React.FC = () => {
                   <div className="text-right">
                     <div className="text-sm text-gray-600">{(f.pricePerGram ?? 0).toFixed(2)} BYN/g</div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button size="sm" variant="secondary" onClick={() => { setEditingFilament(f); setIsCreating(false); }}>{t('common.edit') || 'Edit'}</Button>
-                    <Button size="sm" variant="danger" onClick={() => setDeleteId(f.id)}>{t('common.delete') || 'Delete'}</Button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex items-center space-x-2">
+                      <Button size="sm" variant="secondary" onClick={() => { setEditingFilament(f); setIsCreating(false); }}>{t('common.edit') || 'Edit'}</Button>
+                      <Button size="sm" variant="danger" onClick={() => setDeleteId(f.id)}>{t('common.delete') || 'Delete'}</Button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
