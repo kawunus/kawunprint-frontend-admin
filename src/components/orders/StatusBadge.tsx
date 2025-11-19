@@ -18,6 +18,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
       'отменён': 'bg-red-100 text-red-800',
       'ожидает оплаты': 'bg-yellow-100 text-yellow-800',
       'отправлен': 'bg-purple-100 text-purple-800',
+      'принят': 'bg-blue-100 text-blue-800',
+      'изменена информация': 'bg-amber-100 text-amber-800',
+      'запрошена дополнительная информация': 'bg-yellow-100 text-yellow-800',
+      'распечатано': 'bg-purple-100 text-purple-800',
+      'потрачен филамент': 'bg-amber-100 text-amber-800',
+      'в проектировании': 'bg-indigo-100 text-indigo-800',
     };
 
     return statusColors[normalized] || 'bg-gray-100 text-gray-800';

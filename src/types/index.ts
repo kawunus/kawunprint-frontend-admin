@@ -37,6 +37,11 @@ export interface OrderHistory {
   employee: User;
   comment?: string;
   createdAt: string;
+  filamentConsumed?: {
+    filamentId: number;
+    gramsUsed: number;
+    filamentColor?: string;
+  };
 }
 
 export interface OrderStatus {

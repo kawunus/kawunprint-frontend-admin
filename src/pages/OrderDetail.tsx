@@ -508,7 +508,7 @@ export const OrderDetail: React.FC = () => {
                 disabled={!orderStatuses.length}
               >
                 <option value="" disabled>{statusNameById(order.statusId) || 'Select status'}</option>
-                {orderStatuses.filter(status => status.id !== 8 && status.id !== 12).map(status => (
+                {orderStatuses.filter(status => status.id !== 8).map(status => (
                   <option key={status.id} value={status.id}>{status.description}</option>
                 ))}
               </select>
@@ -521,12 +521,28 @@ export const OrderDetail: React.FC = () => {
           <div className="space-y-4">
             {history.map((entry) => {
               const statusText = entry.status || statusNameById(entry.statusId);
+              const isFilamentConsumption = entry.filamentConsumed;
+              
               return (
-              <div key={entry.id} className="border-l-4 border-blue-500 pl-4 py-2">
+              <div key={entry.id} className={`border-l-4 pl-4 py-2 ${isFilamentConsumption ? 'border-amber-500' : 'border-blue-500'}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <StatusBadge status={statusText} />
+                    {isFilamentConsumption ? (
+                      <div className="inline-flex items-center gap-2 mb-1">
+                        <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
+                          🧵 Потрачено филамента
+                        </span>
+                      </div>
+                    ) : (
+                      <StatusBadge status={statusText} />
+                    )}
                     <p className="text-sm text-gray-600 mt-1">{t('orders.by') || 'by'} {entry.employee.firstName} {entry.employee.lastName}</p>
+                    {isFilamentConsumption && entry.filamentConsumed && (
+                      <p className="text-sm text-gray-700 mt-1 font-semibold">
+                        {entry.filamentConsumed.gramsUsed}г филамента
+                        {entry.filamentConsumed.filamentColor && ` (${entry.filamentConsumed.filamentColor})`}
+                      </p>
+                    )}
                     {entry.comment && (
                       <p className="text-sm text-gray-700 mt-1">{entry.comment}</p>
                     )}

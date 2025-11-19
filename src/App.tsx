@@ -14,6 +14,8 @@ import PrinterDetail from './pages/PrinterDetail';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
 import Files from './pages/Files';
+import Analytics from './pages/Analytics';
+import Import from './pages/Import';
 import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -264,6 +266,24 @@ function App() {
                 <Header />
                 <Files />
               </AdminOnlyRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Header />
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/import"
+            element={
+              <ProtectedRoute>
+                <Header />
+                <Import />
+              </ProtectedRoute>
             }
           />
           <Route

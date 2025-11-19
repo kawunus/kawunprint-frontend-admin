@@ -238,6 +238,43 @@ export const Home: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Analytics & Import widgets (for Admin and Analyst) */}
+        {(isAdmin || (user && user.role === 'ANALYST')) && (
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Analytics widget */}
+            <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 p-6 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="text-indigo-600 text-sm font-medium mb-1">{t('home.widgets.analytics') || 'Analytics'}</div>
+                  <h3 className="text-lg font-semibold text-indigo-900">{t('analytics.title') || 'Analytics & Metrics'}</h3>
+                </div>
+                <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <p className="text-sm text-indigo-700 mb-4">{t('home.widgets.analyticsDesc') || 'View production metrics, order statistics, and inventory insights'}</p>
+              <Button variant="primary" size="sm" className="w-full" onClick={() => navigate('/analytics')}>{t('common.view') || 'View'} →</Button>
+            </div>
+
+            {/* Import & Export widget (Admin only) */}
+            {isAdmin && (
+              <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="text-emerald-600 text-sm font-medium mb-1">{t('home.widgets.import') || 'Data Management'}</div>
+                    <h3 className="text-lg font-semibold text-emerald-900">{t('import.title') || 'Import & Export'}</h3>
+                  </div>
+                  <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </div>
+                <p className="text-sm text-emerald-700 mb-4">{t('home.widgets.importDesc') || 'Export data to CSV, JSON, or Excel for backup and integration'}</p>
+                <Button variant="primary" size="sm" className="w-full" onClick={() => navigate('/import')}>{t('common.view') || 'View'} →</Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
