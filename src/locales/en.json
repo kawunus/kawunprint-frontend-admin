@@ -193,7 +193,8 @@
   "home.location.coords": "Coordinates",
   "home.facts.totalFilament": "Total filament",
   "home.facts.activePrinters": "Active printers",
-  "home.facts.ordersInProgress": "Orders in progress",
+  "home.facts.totalOrders": "Total orders",
+  "home.facts.completedOrders": "Completed orders",
   "home.facts.avgPricePerGram": "Avg price/g"
   ,
   "profile.title": "Profile",

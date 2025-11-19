@@ -192,7 +192,8 @@
   "home.location.coords": "Координаты",
   "home.facts.totalFilament": "Всего филамента",
   "home.facts.activePrinters": "Активные принтеры",
-  "home.facts.ordersInProgress": "Заказы в работе",
+  "home.facts.totalOrders": "Всего заказов",
+  "home.facts.completedOrders": "Выполненные заказы",
   "home.facts.avgPricePerGram": "Средняя цена/г"
   ,
   "profile.title": "Профиль",

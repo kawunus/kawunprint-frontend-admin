@@ -19,7 +19,7 @@ function getGreetingKey(hours: number): string {
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { orders, loading: ordersLoading } = useOrders();
+  const { orders, orderStatuses, loading: ordersLoading } = useOrders();
   const { filaments, types, loading: filamentsLoading } = useFilaments();
   const { printers, loading: printersLoading } = usePrinters();
 
@@ -47,8 +47,24 @@ export const Home: React.FC = () => {
   const timeStr = useMemo(() => now.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit', second: '2-digit' }), [now, i18n.language]);
   // timezone not needed in greeting anymore; keep local in datetime widget via toLocale* APIs
 
+  // Helper to get status name
+  const getStatusName = (order: any): string => {
+    const statusObj = orderStatuses.find(s => s.id === order.statusId);
+    return (statusObj?.description || order.status || '').toLowerCase();
+  };
+
+  // Calculate active orders count (new + in progress)
+  const activeOrdersCount = useMemo(() => {
+    return orders.filter(o => {
+      const statusName = getStatusName(o);
+      // Not completed and not cancelled
+      return statusName !== 'завершён' && statusName !== 'завершено' && 
+             statusName !== 'отменён' && statusName !== 'отменено';
+    }).length;
+  }, [orders, orderStatuses]);
+
   const counts = {
-    orders: orders.length,
+    orders: activeOrdersCount, // NEW + IN PROGRESS only
     filaments: filaments.length,
     printers: printers.length,
     types: types.length,
@@ -58,10 +74,20 @@ export const Home: React.FC = () => {
     const totalGrams = filaments.reduce((sum, f) => sum + (Number(f.residue) || 0), 0);
     const totalKg = totalGrams / 1000;
     const activePrinters = printers.filter(p => p.isActive).length;
-    const inProgress = orders.filter(o => !['completed', 'cancelled'].includes(String(o.status).toLowerCase())).length;
+    
+    // Total orders ever
+    const totalOrders = orders.length;
+    
+    // Completed orders (завершён/завершено, NOT отменён)
+    const completedOrders = orders.filter(o => {
+      const statusName = getStatusName(o);
+      return statusName === 'завершён' || statusName === 'завершено';
+    }).length;
+    
     const avgPrice = filaments.length ? filaments.reduce((s, f) => s + (Number(f.pricePerGram) || 0), 0) / filaments.length : 0;
-    return { totalKg, activePrinters, inProgress, avgPrice };
-  }, [filaments, printers, orders]);
+    
+    return { totalKg, activePrinters, totalOrders, completedOrders, avgPrice };
+  }, [filaments, printers, orders, orderStatuses]);
 
   const isLoading = ordersLoading || filamentsLoading || printersLoading;
 
@@ -122,11 +148,12 @@ export const Home: React.FC = () => {
               <div className="text-2xl font-bold">{isLoading ? '…' : facts.activePrinters}</div>
             </div>
             <div className="rounded-xl bg-white/70 backdrop-blur p-4 border border-white/50">
-              <div className="text-xs text-gray-500">{t('home.facts.ordersInProgress') || 'Orders in progress'}</div>
-              <div className="text-2xl font-bold">{isLoading ? '…' : facts.inProgress}</div>
-              {filaments.length > 0 && (
-                <div className="text-xs text-gray-500 mt-1">{t('home.facts.avgPricePerGram') || 'Avg price/g'}: {facts.avgPrice.toFixed(2)}</div>
-              )}
+              <div className="text-xs text-gray-500">{t('home.facts.totalOrders') || 'Total orders'}</div>
+              <div className="text-2xl font-bold">{isLoading ? '…' : facts.totalOrders}</div>
+            </div>
+            <div className="rounded-xl bg-white/70 backdrop-blur p-4 border border-white/50">
+              <div className="text-xs text-gray-500">{t('home.facts.completedOrders') || 'Completed orders'}</div>
+              <div className="text-2xl font-bold">{isLoading ? '…' : facts.completedOrders}</div>
             </div>
           </div>
         </div>
