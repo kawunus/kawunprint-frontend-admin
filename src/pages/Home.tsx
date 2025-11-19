@@ -201,7 +201,7 @@ export const Home: React.FC = () => {
                   <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/users')}>{t('common.details') || 'Details'}</Button>
                 </div>
                 <div className="rounded-xl bg-gray-50 p-4 items-start">
-                  <div className="text-xs text-gray-500">{i18n.language === 'ru' ? (<>{t('files.totalLine1') || 'Всего'}<br />{t('files.totalLine2') || 'файлов'}</>) : (t('files.total') || 'Total Files')}</div>
+                  <div className="text-xs text-gray-500">{i18n.language === 'ru' ? (t('files.total') || 'Всего файлов') : (t('files.total') || 'Total Files')}</div>
                   <div className="text-2xl font-bold">{filesCount}</div>
                   <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/files')}>{t('common.details') || 'Details'}</Button>
                 </div>

@@ -209,12 +209,21 @@ export const OrderDetail: React.FC = () => {
     try {
       const employeeId = getUserIdFromToken();
       
+      // Check if new status is "completed" or "cancelled"
+      const statusName = orderStatuses.find(s => s.id === changingStatus.newStatusId)?.description?.toLowerCase() || '';
+      const isCompleted = statusName.includes('завершён') || statusName.includes('завершено') || statusName.includes('completed');
+      const isCancelled = statusName.includes('отменён') || statusName.includes('отменено') || statusName.includes('cancelled');
+      
+      // Set completedAt if status is completed or cancelled
+      const completedAt = (isCompleted || isCancelled) ? new Date().toISOString() : undefined;
+      
       // Update order status
       await ordersApi.updateOrder(order.id, {
         employeeId,
         statusId: changingStatus.newStatusId,
         totalPrice: order.totalPrice,
-        comment: order.comment || ''
+        comment: order.comment || '',
+        completedAt
       });
       
       // Add history entry with comment
