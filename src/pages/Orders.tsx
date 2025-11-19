@@ -295,7 +295,7 @@ export const Orders: React.FC = () => {
       const isCancelled = statusName.includes('отменён') || statusName.includes('отменено') || statusName.includes('cancelled');
       
       // Set completedAt if status is completed or cancelled
-      const completedAt = (isCompleted || isCancelled) ? new Date().toISOString() : undefined;
+      const completedAt = (isCompleted || isCancelled) ? new Date().toISOString() : null;
       
       // Update order status
       await ordersApi.updateOrder(changingStatus.orderId, {

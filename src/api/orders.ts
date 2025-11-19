@@ -14,7 +14,7 @@ export const ordersApi = {
 
   updateOrder: async (
     id: number,
-    orderData: { employeeId: number | null; statusId: number; totalPrice: number; comment: string; completedAt?: string }
+    orderData: { employeeId: number | null; statusId: number; totalPrice: number; comment: string; completedAt?: string | null }
   ): Promise<Order> => {
     const response = await api.put<Order>(`/api/v1/orders/${id}`, orderData);
     return response.data;
