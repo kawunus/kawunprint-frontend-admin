@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 import { Login } from './pages/Login';
 import { Orders } from './pages/Orders';
 import { OrderDetail } from './pages/OrderDetail';
@@ -15,6 +16,12 @@ import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const { i18n } = useTranslation();
+
+  const toggleLang = () => {
+    const next = i18n.language === 'ru' ? 'en' : 'ru';
+    i18n.changeLanguage(next);
+  };
 
   console.log('🛡️ ProtectedRoute check:', { isAuthenticated, isAdmin, isLoading });
 
@@ -35,27 +42,39 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isAdmin) {
     console.log('🚫 ProtectedRoute: not admin, showing access denied');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 text-center p-8">
-          <div>
-            <h2 className="text-3xl font-extrabold text-red-600 mb-4">
-              Доступ запрещен
-            </h2>
-            <p className="text-xl text-gray-700 mb-6">
-              У вас нет прав для доступа к этой странице :(
-            </p>
-            <p className="text-sm text-gray-500 mb-8">
-              Только администраторы могут получить доступ к панели управления.
-            </p>
-            <button
-              onClick={() => {
-                localStorage.removeItem('authToken');
-                window.location.href = '/login';
-              }}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Вернуться к входу
-            </button>
+      <div className="min-h-screen bg-gray-50">
+        {/* Language Toggle Button - Fixed Position */}
+        <div className="fixed top-6 right-6 z-10">
+          <button
+            onClick={toggleLang}
+            className="px-4 py-2 bg-gray-100 text-gray-800 hover:bg-blue-600 hover:text-white border border-gray-200 hover:border-blue-600 rounded-md transition-colors text-sm font-medium shadow-md"
+          >
+            {i18n.language?.toUpperCase?.() || 'RU'}
+          </button>
+        </div>
+        
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="max-w-md w-full space-y-8 text-center p-8">
+            <div>
+              <h2 className="text-3xl font-extrabold text-red-600 mb-4">
+                Доступ запрещен
+              </h2>
+              <p className="text-xl text-gray-700 mb-6">
+                У вас нет прав для доступа к этой странице :(
+              </p>
+              <p className="text-sm text-gray-500 mb-8">
+                Только администраторы могут получить доступ к панели управления.
+              </p>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('authToken');
+                  window.location.href = '/login';
+                }}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Вернуться к входу
+              </button>
+            </div>
           </div>
         </div>
       </div>

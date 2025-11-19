@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { useTranslation } from 'react-i18next';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,12 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { i18n } = useTranslation();
+
+  const toggleLang = () => {
+    const next = i18n.language === 'ru' ? 'en' : 'ru';
+    i18n.changeLanguage(next);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,16 +51,27 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            3D Print Studio Admin
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your administrator account
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Language Toggle Button - Fixed Position */}
+      <div className="fixed top-6 right-6 z-10">
+        <button
+          onClick={toggleLang}
+          className="px-4 py-2 bg-gray-100 text-gray-800 hover:bg-blue-600 hover:text-white border border-gray-200 hover:border-blue-600 rounded-md transition-colors text-sm font-medium shadow-md"
+        >
+          {i18n.language?.toUpperCase?.() || 'RU'}
+        </button>
+      </div>
+      
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              3D Print Studio Admin
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Sign in to your administrator account
+            </p>
+          </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded-md bg-red-50 p-4">
@@ -89,6 +107,7 @@ export const Login: React.FC = () => {
             </Button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
