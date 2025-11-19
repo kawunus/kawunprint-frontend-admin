@@ -263,6 +263,7 @@
   "users.loadError": "Failed to load users",
   "users.saveError": "Failed to save user",
   "users.deleteError": "Failed to delete user",
+  "users.cannotDeleteYourself": "You cannot delete your own account",
   "users.employees": "Employees",
   "home.facts.employees": "Employees",
   "filters.hide": "Hide",

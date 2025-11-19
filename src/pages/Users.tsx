@@ -5,6 +5,7 @@ import { User } from '../types';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Table } from '../components/ui/Table';
+import { getUserIdFromToken } from '../utils/jwt';
 
 export const Users: React.FC = () => {
   const { t } = useTranslation();
@@ -12,11 +13,15 @@ export const Users: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
+  // Filters - Applied filters (used for actual filtering)
   const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT'>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  const [appliedRoleFilter, setAppliedRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT'>('ALL');
+  const [appliedStatusFilter, setAppliedStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [showFilters, setShowFilters] = useState(false);
+
+  // Modal filters (temporary state while modal is open)
+  const [modalRoleFilter, setModalRoleFilter] = useState<'ALL' | 'ADMIN' | 'EMPLOYEE' | 'CLIENT'>('ALL');
+  const [modalStatusFilter, setModalStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
 
   // Edit modal
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -86,6 +91,17 @@ export const Users: React.FC = () => {
   const handleDelete = async () => {
     if (!deletingUser) return;
 
+    // Get current user ID
+    const currentUserId = getUserIdFromToken();
+    
+    // Prevent deleting yourself
+    if (currentUserId && currentUserId === deletingUser.id) {
+      alert(t('users.cannotDeleteYourself') || 'You cannot delete your own account');
+      setShowDeleteModal(false);
+      setDeletingUser(null);
+      return;
+    }
+
     try {
       await usersApi.deleteUser(deletingUser.id);
       await loadUsers();
@@ -107,17 +123,17 @@ export const Users: React.FC = () => {
         user.email.toLowerCase().includes(query);
 
       // Role filter
-      const matchesRole = roleFilter === 'ALL' || user.role === roleFilter;
+      const matchesRole = appliedRoleFilter === 'ALL' || user.role === appliedRoleFilter;
 
       // Status filter
       const matchesStatus =
-        statusFilter === 'ALL' ||
-        (statusFilter === 'ACTIVE' && user.isActive) ||
-        (statusFilter === 'INACTIVE' && !user.isActive);
+        appliedStatusFilter === 'ALL' ||
+        (appliedStatusFilter === 'ACTIVE' && user.isActive) ||
+        (appliedStatusFilter === 'INACTIVE' && !user.isActive);
 
       return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [users, searchQuery, roleFilter, statusFilter]);
+  }, [users, searchQuery, appliedRoleFilter, appliedStatusFilter]);
 
   const columns = [
     {
@@ -209,37 +225,73 @@ export const Users: React.FC = () => {
         </div>
       )}
 
-      {/* Filters */}
+      {/* Toolbar with Search and Filters button */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">{t('filters.title') || 'Filters'}</h2>
-          <Button variant="secondary" size="sm" onClick={() => setShowFilters(!showFilters)}>
-            {showFilters ? (t('filters.hide') || 'Hide') : (t('filters.show') || 'Show')}
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('users.search') || 'Search'}
-            </label>
-            <Input
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Search */}
+          <div className="relative w-full sm:w-64">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <input
               type="text"
+              placeholder={t('users.searchPlaceholder') || 'Search by name or email...'}
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              placeholder={t('users.searchPlaceholder') || 'Name or email...'}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full text-sm py-1.5 h-9 pl-9 pr-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
-          {showFilters && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* Filters and Clear buttons */}
+          <div className="flex items-center space-x-2">
+            <Button
+              aria-label="filters"
+              size="sm"
+              onClick={() => {
+                if (!showFilters) {
+                  // Prefill modal inputs from applied filters when opening
+                  setModalRoleFilter(appliedRoleFilter);
+                  setModalStatusFilter(appliedStatusFilter);
+                }
+                setShowFilters((s) => !s);
+              }}
+              variant="secondary"
+            >
+              {t('filaments.filters') || 'Filters'}
+            </Button>
+            {(appliedRoleFilter !== 'ALL' || appliedStatusFilter !== 'ALL') && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery('');
+                  setAppliedRoleFilter('ALL');
+                  setAppliedStatusFilter('ALL');
+                }}
+              >
+                {t('filters.clear') || 'Clear'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Filters Modal */}
+      {showFilters && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setShowFilters(false)} />
+          <div className="bg-white p-6 rounded shadow-lg z-50 w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">{t('filaments.filters') || 'Filters'}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   {t('users.roleFilter') || 'Role'}
                 </label>
                 <select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value as any)}
+                  value={modalRoleFilter}
+                  onChange={(e) => setModalRoleFilter(e.target.value as any)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="ALL">{t('users.allRoles') || 'All Roles'}</option>
@@ -249,13 +301,13 @@ export const Users: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   {t('users.statusFilter') || 'Status'}
                 </label>
                 <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  value={modalStatusFilter}
+                  onChange={(e) => setModalStatusFilter(e.target.value as any)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="ALL">{t('users.allStatuses') || 'All'}</option>
@@ -263,26 +315,25 @@ export const Users: React.FC = () => {
                   <option value="INACTIVE">{t('users.inactive') || 'Inactive'}</option>
                 </select>
               </div>
-            </>
-          )}
-        </div>
-
-        {showFilters && (
-          <div className="mt-4">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setSearchQuery('');
-                setRoleFilter('ALL');
-                setStatusFilter('ALL');
-              }}
-            >
-              {t('filters.clear') || 'Clear Filters'}
-            </Button>
+            </div>
+            <div className="mt-4">
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setAppliedRoleFilter(modalRoleFilter);
+                  setAppliedStatusFilter(modalStatusFilter);
+                  setShowFilters(false);
+                }}
+              >
+                {t('common.apply') || 'Apply'}
+              </Button>
+              <Button variant="secondary" className="ml-2" onClick={() => setShowFilters(false)}>
+                {t('common.cancel') || 'Cancel'}
+              </Button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -437,33 +488,25 @@ export const Users: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && deletingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4 text-red-600">
-              {t('users.confirmDelete') || 'Confirm Delete'}
-            </h2>
-            <p className="text-gray-700 mb-6">
-              {t('users.confirmDeleteMessage') || 'Are you sure you want to delete this user?'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setShowDeleteModal(false)} />
+          <div className="bg-white p-6 rounded shadow-lg z-50 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-3">{t('common.confirm') || 'Confirm'}</h3>
+            <p className="mb-4">{t('users.confirmDeleteMessage') || 'Are you sure you want to delete this user?'}</p>
+            <p className="text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded">
+              <strong>{deletingUser.firstName} {deletingUser.lastName}</strong>
+              <br />
+              {deletingUser.email}
             </p>
-            <p className="text-sm text-gray-600 mb-4">
-              <strong>{deletingUser.firstName} {deletingUser.lastName}</strong> ({deletingUser.email})
-            </p>
-            <div className="flex gap-3">
-              <Button
-                variant="danger"
-                onClick={handleDelete}
-                className="flex-1"
-              >
-                {t('common.delete') || 'Delete'}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeletingUser(null);
-                }}
-              >
+            <div className="flex justify-end">
+              <Button variant="secondary" onClick={() => {
+                setShowDeleteModal(false);
+                setDeletingUser(null);
+              }}>
                 {t('common.cancel') || 'Cancel'}
+              </Button>
+              <Button variant="danger" className="ml-2" onClick={handleDelete}>
+                {t('common.delete') || 'Delete'}
               </Button>
             </div>
           </div>
