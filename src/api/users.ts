@@ -11,6 +11,16 @@ export interface UpdateUserAdminRequest {
   isActive: boolean;
 }
 
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role: 'ADMIN' | 'EMPLOYEE' | 'CLIENT';
+  isActive: boolean;
+}
+
 export const usersApi = {
   getAll: async (): Promise<User[]> => {
     const res = await api.get<User[]>('/api/v1/users');
@@ -37,6 +47,12 @@ export const usersApi = {
   // Delete current user account
   deleteMe: async (): Promise<void> => {
     await api.delete('/api/v1/users/me');
+  },
+
+  // Admin: Create new user
+  createUser: async (data: CreateUserRequest): Promise<User> => {
+    const response = await api.post<User>('/api/v1/users', data);
+    return response.data;
   },
 
   // Admin: Update user by ID

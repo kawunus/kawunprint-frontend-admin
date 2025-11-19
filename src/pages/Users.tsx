@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usersApi, UpdateUserAdminRequest } from '../api/users';
+import { usersApi, UpdateUserAdminRequest, CreateUserRequest } from '../api/users';
 import { User } from '../types';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -36,6 +36,18 @@ export const Users: React.FC = () => {
   });
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Create modal
+  const [createForm, setCreateForm] = useState<CreateUserRequest>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    password: '',
+    role: 'CLIENT',
+    isActive: true,
+  });
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Delete confirmation
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
@@ -83,6 +95,35 @@ export const Users: React.FC = () => {
       setEditingUser(null);
     } catch (err: any) {
       alert(err.response?.data?.message || t('users.saveError') || 'Failed to save user');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    // Validation
+    if (!createForm.firstName.trim() || !createForm.lastName.trim() || !createForm.email.trim() || !createForm.phoneNumber.trim() || !createForm.password.trim()) {
+      alert(t('users.fillAllFields') || 'Please fill all required fields');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await usersApi.createUser(createForm);
+      await loadUsers();
+      setShowCreateModal(false);
+      // Reset form
+      setCreateForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        password: '',
+        role: 'CLIENT',
+        isActive: true,
+      });
+    } catch (err: any) {
+      alert(err.response?.data?.message || t('users.createError') || 'Failed to create user');
     } finally {
       setSaving(false);
     }
@@ -260,6 +301,17 @@ export const Users: React.FC = () => {
               variant="secondary"
             >
               {t('filaments.filters') || 'Filters'}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <svg className="w-4 h-4 mr-1 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M12 5v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {t('users.addUser') || 'Add User'}
             </Button>
             {(appliedRoleFilter !== 'ALL' || appliedStatusFilter !== 'ALL') && (
               <Button
@@ -476,6 +528,153 @@ export const Users: React.FC = () => {
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingUser(null);
+                }}
+                disabled={saving}
+              >
+                {t('common.cancel') || 'Cancel'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <h2 className="text-2xl font-bold mb-4">
+              {t('users.addUser') || 'Add User'}
+            </h2>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('users.firstName') || 'First Name'} *
+                  </label>
+                  <Input
+                    type="text"
+                    value={createForm.firstName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setCreateForm({ ...createForm, firstName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t('users.lastName') || 'Last Name'} *
+                  </label>
+                  <Input
+                    type="text"
+                    value={createForm.lastName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setCreateForm({ ...createForm, lastName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('users.email') || 'Email'} *
+                </label>
+                <Input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setCreateForm({ ...createForm, email: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('users.phone') || 'Phone'} *
+                </label>
+                <Input
+                  type="tel"
+                  value={createForm.phoneNumber}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setCreateForm({ ...createForm, phoneNumber: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('users.password') || 'Password'} *
+                </label>
+                <Input
+                  type="password"
+                  value={createForm.password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setCreateForm({ ...createForm, password: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('users.role') || 'Role'} *
+                </label>
+                <select
+                  value={createForm.role}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, role: e.target.value as any })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="ADMIN">ADMIN</option>
+                  <option value="EMPLOYEE">EMPLOYEE</option>
+                  <option value="CLIENT">CLIENT</option>
+                </select>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActiveCreate"
+                  checked={createForm.isActive}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, isActive: e.target.checked })
+                  }
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isActiveCreate" className="ml-2 block text-sm text-gray-700">
+                  {t('users.active') || 'Active'}
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="primary"
+                onClick={handleCreate}
+                disabled={saving}
+                className="flex-1"
+              >
+                {saving ? (t('common.creating') || 'Creating...') : (t('common.create') || 'Create')}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  // Reset form
+                  setCreateForm({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phoneNumber: '',
+                    password: '',
+                    role: 'CLIENT',
+                    isActive: true,
+                  });
                 }}
                 disabled={saving}
               >
