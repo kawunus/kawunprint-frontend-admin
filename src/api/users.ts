@@ -14,18 +14,18 @@ export const usersApi = {
 
   // Get current user profile
   getMe: async (): Promise<User> => {
-    const response = await api.get<User>('/users/me');
+    const response = await api.get<User>('/api/v1/users/me');
     return response.data;
   },
 
   // Update current user profile
   updateMe: async (data: UpdateProfileRequest): Promise<User> => {
-    const response = await api.put<User>('/users/me', data);
+    const response = await api.put<User>('/api/v1/users/me', data);
     return response.data;
   },
 
   // Delete current user account
   deleteMe: async (): Promise<void> => {
-    await api.delete('/users/me');
+    await api.delete('/api/v1/users/me');
   },
 };
