@@ -13,6 +13,7 @@ import Printers from './pages/Printers';
 import PrinterDetail from './pages/PrinterDetail';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
+import Files from './pages/Files';
 import { Header } from './components/layout/Header';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -253,6 +254,15 @@ function App() {
               <AdminOnlyRoute>
                 <Header />
                 <Users />
+              </AdminOnlyRoute>
+            }
+          />
+          <Route
+            path="/files"
+            element={
+              <AdminOnlyRoute>
+                <Header />
+                <Files />
               </AdminOnlyRoute>
             }
           />

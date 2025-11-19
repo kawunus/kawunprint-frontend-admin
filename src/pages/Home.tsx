@@ -7,6 +7,7 @@ import { useFilaments } from '../hooks/useFilaments';
 import { usePrinters } from '../hooks/usePrinters';
 import { useAuth } from '../hooks/useAuth';
 import { usersApi } from '../api/users';
+import { filesApi } from '../api/files';
 import { User } from '../types';
 import { getUserInfoFromToken } from '../utils/jwt';
 
@@ -30,6 +31,7 @@ export const Home: React.FC = () => {
   const [now, setNow] = useState<Date>(new Date());
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [filesCount, setFilesCount] = useState<number>(0);
 
   const user = getUserInfoFromToken();
 
@@ -43,6 +45,31 @@ export const Home: React.FC = () => {
   useEffect(() => {
     if (isAdmin) {
       loadUsers();
+    }
+  }, [isAdmin]);
+
+  // Fetch total files count
+  useEffect(() => {
+    if (isAdmin) {
+      const fetchFilesCount = async () => {
+        try {
+          const data = await filesApi.getAllFiles('', 1000);
+          console.log('📦 Fetched files count response:', data);
+          if (data && data.success && data.files && Array.isArray(data.files)) {
+            console.log('✅ Files count:', data.files.length);
+            setFilesCount(data.files.length);
+          } else if (data && typeof data.count === 'number') {
+            console.log('✅ Files count from count field:', data.count);
+            setFilesCount(data.count);
+          } else {
+            console.error('❌ Unexpected response format:', data);
+          }
+        } catch (error) {
+          console.error('❌ Failed to fetch files count:', error);
+        }
+      };
+
+      fetchFilesCount();
     }
   }, [isAdmin]);
 
@@ -167,11 +194,18 @@ export const Home: React.FC = () => {
               <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/filament-types')}>{t('common.details') || 'Details'}</Button>
             </div>
             {isAdmin && (
-              <div className="rounded-xl bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">{t('users.employees') || 'Employees'}</div>
-                <div className="text-2xl font-bold">{isLoading ? '…' : counts.employees}</div>
-                <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/users')}>{t('common.details') || 'Details'}</Button>
-              </div>
+              <>
+                <div className="rounded-xl bg-gray-50 p-4 items-start">
+                  <div className="text-xs text-gray-500">{t('users.total') || 'Total Users'}</div>
+                  <div className="text-2xl font-bold">{isLoading ? '…' : users.length}</div>
+                  <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/users')}>{t('common.details') || 'Details'}</Button>
+                </div>
+                <div className="rounded-xl bg-gray-50 p-4 items-start">
+                  <div className="text-xs text-gray-500">{i18n.language === 'ru' ? (<>{t('files.totalLine1') || 'Всего'}<br />{t('files.totalLine2') || 'файлов'}</>) : (t('files.total') || 'Total Files')}</div>
+                  <div className="text-2xl font-bold">{filesCount}</div>
+                  <Button className="mt-2 w-full justify-center transform transition-transform duration-150 hover:scale-105" variant="primary" onClick={() => navigate('/files')}>{t('common.details') || 'Details'}</Button>
+                </div>
+              </>
             )}
           </div>
         </div>

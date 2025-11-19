@@ -120,3 +120,35 @@ export interface PrinterHistory {
   createdAt?: string;
   occurredAt?: string;
 }
+
+export interface OrderFile {
+  id: number;
+  orderId: number;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+  uploadedBy: number;
+}
+
+export interface OrderFileStats {
+  orderId: number;
+  totalFiles: number;
+  maxFiles: number;
+  remainingSlots: number;
+  totalSize: number;
+  totalSizeFormatted: string;
+  canUploadMore: boolean;
+  files: OrderFileInfo[];
+}
+
+export interface OrderFileInfo {
+  id: number;
+  fileName: string;
+  size: number;
+  sizeFormatted: string;
+  mimeType: string;
+  isImage: boolean;
+  uploadedAt: string;
+}

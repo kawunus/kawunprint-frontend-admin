@@ -11,6 +11,8 @@ import { getUserIdFromToken } from '../utils/jwt';
 import { usersApi } from '../api/users';
 import { User } from '../types';
 import { useAuth } from '../hooks/useAuth';
+import { FileUpload } from '../components/files/FileUpload';
+import { filesApi } from '../api/files';
 
 export const Orders: React.FC = () => {
   const { orders, orderStatuses, loading, error, refreshOrders } = useOrders();
@@ -49,6 +51,11 @@ export const Orders: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [orderEditError, setOrderEditError] = useState<string>('');
   const [userSearch, setUserSearch] = useState<string>('');
+  
+  // File upload state for new orders
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   
   // Status change modal state
   const [changingStatus, setChangingStatus] = useState<{ orderId: number; currentStatusId: number; newStatusId: number } | null>(null);
@@ -442,6 +449,17 @@ export const Orders: React.FC = () => {
       console.error('Failed to delete order:', err);
     }
   };
+
+  const handleFileSelect = (file: File) => {
+    console.log('📎 File selected:', file);
+    setUploadedFiles((prevFiles) => [...prevFiles, file]);
+  };
+
+  useEffect(() => {
+    if (!isCreating) {
+      setUploadedFiles([]); // Clear uploaded files when modal is closed
+    }
+  }, [isCreating]);
 
   if (error) {
     return (
@@ -867,6 +885,48 @@ export const Orders: React.FC = () => {
                   rows={3}
                 />
               </div>
+
+              {/* File Upload - only for creating new orders */}
+              {isCreating && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('orders.uploadFiles') || 'Upload Files'}
+                  </label>
+                  <FileUpload
+                    onFileSelect={handleFileSelect}
+                    maxSizeMB={20} // 20MB
+                  />
+                </div>
+              )}
+
+              {/* Display uploaded files */}
+              {uploadedFiles.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    {t('files.title') || 'Uploaded Files'}
+                  </h4>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {uploadedFiles.map((file, index) => (
+                      <li key={index} className="text-sm text-gray-600">
+                        {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Добавляем индикатор загрузки в модальное окно */}
+              {isUploadingFiles && (
+                <div className="flex justify-center items-center mt-4">
+                  <div className="loader" /> {/* Добавьте CSS для анимации */}
+                  <span className="ml-2 text-sm text-gray-600">
+                    {t('orders.uploadingProgress', {
+                      current: uploadProgress.current,
+                      total: uploadProgress.total
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex gap-2">
@@ -877,6 +937,10 @@ export const Orders: React.FC = () => {
                     setOrderEditError('');
                     
                     if (isCreating) {
+                      console.log('🚀 Starting order creation...');
+                      console.log('📦 Uploaded files count:', uploadedFiles.length);
+                      console.log('📦 Uploaded files:', uploadedFiles);
+                      
                       if (!editingOrder.customerId || !editingOrder.statusId || editingOrder.totalPrice == null) {
                         setOrderEditError(t('orders.fillRequired') || 'Please fill all required fields');
                         return;
@@ -887,7 +951,35 @@ export const Orders: React.FC = () => {
                         totalPrice: editingOrder.totalPrice,
                         comment: editingOrder.comment || ''
                       };
+                      
+                      console.log('📝 Creating order with data:', orderData);
                       const createdOrder = await ordersApi.createOrder(orderData);
+                      console.log('✅ Order created:', createdOrder);
+                      
+                      // Upload files if any were selected
+                      if (uploadedFiles.length > 0) {
+                        console.log(`📤 Starting file upload for ${uploadedFiles.length} files...`);
+                        setUploadProgress({ current: 0, total: uploadedFiles.length }); // Инициализируем прогресс
+                        setIsUploadingFiles(true); // Включаем индикатор загрузки
+                        try {
+                          for (let i = 0; i < uploadedFiles.length; i++) {
+                            const file = uploadedFiles[i];
+                            console.log(`📤 Uploading file ${i + 1}/${uploadedFiles.length}:`, file.name);
+                            const uploadedFile = await filesApi.uploadFile(createdOrder.id, file);
+                            console.log(`✅ File ${i + 1} uploaded successfully:`, uploadedFile);
+                            // Обновляем прогресс загрузки
+                            setUploadProgress({ current: i + 1, total: uploadedFiles.length });
+                          }
+                          console.log('✅ All files uploaded');
+                        } catch (fileErr: any) {
+                          console.error('❌ File upload error:', fileErr);
+                          // Don't block order creation if file upload fails
+                        } finally {
+                          setIsUploadingFiles(false); // Stop upload indicator
+                        }
+                      } else {
+                        console.log('ℹ️ No files to upload');
+                      }
                       
                       // Add initial history entry for order creation
                       await ordersApi.addOrderHistory(createdOrder.id, {

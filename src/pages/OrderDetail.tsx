@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ordersApi } from '../api/orders';
 import { filamentsApi } from '../api/filaments';
-import { Order, OrderHistory, OrderStatus } from '../types';
+import { filesApi } from '../api/files';
+import { Order, OrderHistory, OrderStatus, OrderFileStats } from '../types';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/orders/StatusBadge';
 import { formatLocalDateTime } from '../utils/datetime';
@@ -10,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { useFilaments } from '../hooks/useFilaments';
 import { getUserIdFromToken } from '../utils/jwt';
 import { useAuth } from '../hooks/useAuth';
+import { FileUpload } from '../components/files/FileUpload';
+import { FileList } from '../components/files/FileList';
 
 export const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +50,12 @@ export const OrderDetail: React.FC = () => {
   // Edit modal state
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedOrder, setEditedOrder] = useState<{ totalPrice: number; comment: string } | null>(null);
+  
+  // File upload state
+  const [fileStats, setFileStats] = useState<OrderFileStats | null>(null);
+  const [filesLoading, setFilesLoading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [fileError, setFileError] = useState<string>('');
   
   // Filament filter states
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<number | ''>('');
@@ -93,6 +102,62 @@ export const OrderDetail: React.FC = () => {
     };
     fetchFilamentTypes();
   }, []);
+
+  // Load file stats
+  useEffect(() => {
+    if (id) {
+      fetchFileStats();
+    }
+  }, [id]);
+
+  const fetchFileStats = async () => {
+    try {
+      setFilesLoading(true);
+      const stats = await filesApi.getFileStats(Number(id));
+      setFileStats(stats);
+      setFileError('');
+    } catch (err: any) {
+      console.error('Failed to load file stats:', err);
+      setFileError(err?.response?.data?.message || 'Failed to load files');
+    } finally {
+      setFilesLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      setUploadingFile(true);
+      setFileError('');
+      
+      // Client-side validation
+      if (fileStats && fileStats.totalFiles >= fileStats.maxFiles) {
+        setFileError(t('files.errorMaxFiles', { max: fileStats.maxFiles }) || `Maximum ${fileStats.maxFiles} files per order`);
+        return;
+      }
+
+      await filesApi.uploadFile(Number(id), file);
+      await fetchFileStats(); // Refresh file list
+    } catch (err: any) {
+      console.error('File upload error:', err);
+      setFileError(err?.response?.data?.message || t('files.errorUploadFailed') || 'File upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleFileDelete = async (fileId: number) => {
+    if (!window.confirm(t('files.confirmDelete') || 'Are you sure you want to delete this file?')) {
+      return;
+    }
+
+    try {
+      await filesApi.deleteFile(Number(id), fileId);
+      await fetchFileStats(); // Refresh file list
+    } catch (err: any) {
+      console.error('File delete error:', err);
+      setFileError(err?.response?.data?.message || t('files.errorDeleteFailed') || 'File deletion failed');
+    }
+  };
 
   const refreshOrderData = async () => {
     try {
@@ -477,6 +542,53 @@ export const OrderDetail: React.FC = () => {
               <p className="text-gray-500 text-center py-4">{t('orders.noHistory') || 'No history available'}</p>
             )}
           </div>
+        </div>
+
+        {/* Files Section */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">{t('files.title') || 'Attached Files'}</h2>
+            {fileStats && (
+              <span className="text-sm text-gray-600">
+                {t('files.fileCount', { current: fileStats.totalFiles, max: fileStats.maxFiles }) || 
+                  `Files: ${fileStats.totalFiles}/${fileStats.maxFiles}`}
+              </span>
+            )}
+          </div>
+
+          {fileError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+              {fileError}
+            </div>
+          )}
+
+          {/* File upload section - only for ADMIN and EMPLOYEE */}
+          {isAdmin && fileStats && fileStats.canUploadMore && !uploadingFile && (
+            <div className="mb-4">
+              <FileUpload 
+                onFileSelect={handleFileUpload}
+                maxSizeMB={20}
+                disabled={!fileStats.canUploadMore}
+              />
+            </div>
+          )}
+
+          {uploadingFile && (
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+                <span className="text-sm text-blue-600">{t('files.uploading') || 'Uploading file...'}</span>
+              </div>
+            </div>
+          )}
+
+          {/* File list */}
+          <FileList 
+            files={fileStats?.files || []}
+            onDelete={isAdmin ? handleFileDelete : undefined}
+            canDelete={isAdmin}
+            loading={filesLoading}
+          />
         </div>
       </div>
 
