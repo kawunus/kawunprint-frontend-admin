@@ -51,7 +51,7 @@ export const usersApi = {
 
   // Admin: Create new user
   createUser: async (data: CreateUserRequest): Promise<User> => {
-    const response = await api.post<User>('/api/v1/users', data);
+    const response = await api.post<User>('/api/v1/register', data);
     return response.data;
   },
 
